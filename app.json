@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "Family Points",
+    "slug": "family-points",
+    "scheme": "familypoints",
+    "version": "0.1.1",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.familypoints.mobile"
+    },
+    "android": {
+      "package": "app.familypoints.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#235846",
+        "foregroundImage": "./assets/android-icon-foreground.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "single",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-web-browser",
+      "expo-router",
+      "expo-font"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "54843b67-f2f8-4562-85f2-beead7b86469"
+      }
+    },
+    "owner": "alexjoei"
+  }
+}
