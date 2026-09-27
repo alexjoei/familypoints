@@ -1,5 +1,7 @@
 # Entrega de desarrollo — 26 de septiembre de 2026
 
+Última entrega: APK 0.1.1 (versionCode 2) generado desde `40c07e0`, subido a GitHub y comprobado por CI. Incorpora el flujo claro de sumar, aceptar y canjear puntos. [Descarga actualizada](apk-prueba.md).
+
 Actualización del 27 de septiembre: APK Android 0.1.0 firmado y generado con EAS. [Descarga e instrucciones](apk-prueba.md). Pendiente instalarlo y probarlo en un móvil físico. Proyecto EAS y firma Android configurados; Supabase y Google siguen pendientes.
 
 ## Disponible ahora
