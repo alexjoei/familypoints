@@ -1,5 +1,7 @@
 import * as ImagePicker from 'expo-image-picker';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
+import { File } from 'expo-file-system';
+import { Platform } from 'react-native';
 import { supabase } from './supabase';
 
 const bucket = 'fp-contributions';
@@ -24,7 +26,9 @@ export async function chooseContributionPhoto(): Promise<string | null> {
 
 export async function uploadContributionPhoto(groupId: string, userId: string, proposalId: string, uri: string) {
   if (!supabase) throw new Error('not_configured');
-  const data = await fetch(uri).then((response) => response.arrayBuffer());
+  const data = Platform.OS === 'web'
+    ? await fetch(uri).then((response) => response.arrayBuffer())
+    : await new File(uri).arrayBuffer();
   if (data.byteLength > maxBytes) throw new Error('photo_too_large');
   const path = `${groupId}/${userId}/${proposalId}.jpg`;
   const { error } = await supabase.storage.from(bucket).upload(path, data, {
