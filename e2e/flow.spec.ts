@@ -6,7 +6,7 @@ test('mobile demo: create, reach majority, redeem, persist and change language',
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/');
   await expect(page.getByText('Suma puntos.')).toBeVisible();
-  await page.getByRole('button', { name: 'Probar con un grupo de ejemplo' }).click();
+  await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
   await expect(page.getByText('Hola, Alex.')).toBeVisible();
   await page.screenshot({ path: 'artifacts/home-mobile.png', fullPage: true });
   await page.getByRole('button', { name: 'Sumar puntos', exact: true }).first().click();
@@ -25,16 +25,6 @@ test('mobile demo: create, reach majority, redeem, persist and change language',
     .filter({ visible: true })
     .locator('..');
   await proposal.getByRole('button', { name: 'Aceptar', exact: true }).click();
-  await expect(proposal.getByText('1 de 2 aprobaciones', { exact: false })).toBeVisible();
-  await page.getByRole('tab', { name: 'Inicio' }).click();
-  await page.getByRole('button', { name: 'Dani', exact: true }).click();
-  await page.getByRole('tab', { name: 'Pendientes' }).click();
-  await page
-    .getByText('Organizar una escapada', { exact: true })
-    .filter({ visible: true })
-    .locator('..')
-    .getByRole('button', { name: 'Aceptar', exact: true })
-    .click();
   await expect(
     page.getByText('Organizar una escapada', { exact: true }).filter({ visible: true }),
   ).toHaveCount(0);
@@ -49,11 +39,11 @@ test('mobile demo: create, reach majority, redeem, persist and change language',
     page.getByText('30 disponibles para canjear · 30 reservados', { exact: true }),
   ).toBeVisible();
   await page.reload();
-  await page.getByRole('button', { name: 'Probar con un grupo de ejemplo' }).click();
+  await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
   await expect(
     page.getByText('30 disponibles para canjear · 30 reservados', { exact: true }),
   ).toBeVisible();
-  for (const member of ['Sam', 'Dani']) {
+  for (const member of ['Sam']) {
     await page.getByRole('button', { name: member, exact: true }).click();
     await page.getByRole('tab', { name: 'Pendientes' }).click();
     await page
@@ -87,7 +77,7 @@ test('responsive welcome and demo do not overflow narrow screens', async ({ page
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   );
-  await page.getByRole('button', { name: 'Probar con un grupo de ejemplo' }).click();
+  await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
   await page.getByRole('tab', { name: 'Canjes' }).click();
   await page.screenshot({ path: 'artifacts/rewards-mobile.png', fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
@@ -101,7 +91,7 @@ test('adjustment requires author acceptance and history shows the previous revis
   page,
 }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Probar con un grupo de ejemplo' }).click();
+  await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
   await page.getByRole('tab', { name: 'Pendientes' }).click();
   await page.getByRole('button', { name: 'Proponer puntos' }).click();
   await page.getByRole('textbox', { name: 'Puntos propuestos' }).fill('10');
@@ -111,7 +101,7 @@ test('adjustment requires author acceptance and history shows the previous revis
   await page.getByRole('button', { name: 'Sam', exact: true }).click();
   await page.getByRole('tab', { name: 'Pendientes' }).click();
   await page.getByRole('button', { name: 'Aceptar ajuste y volver a votar' }).click();
-  await expect(page.getByText('0 de 2 aprobaciones · revisión 2')).toBeVisible();
+  await expect(page.getByText('0 de 1 aprobaciones · revisión 2')).toBeVisible();
   await page.getByRole('tab', { name: 'Historial' }).click();
   await page.getByRole('button', { name: 'Ver detalle' }).first().click();
   await expect(page.getByText('REVISIÓN 1', { exact: true })).toBeVisible();

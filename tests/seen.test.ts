@@ -3,7 +3,7 @@ import { createDemo } from '../src/domain/demo';
 import { applyCommand, balance, recordSeen, voterStatus } from '../src/domain/model';
 describe('read receipts are separate from votes', () => {
   it('only records the viewer and never changes balance, votes or activity', () => {
-    const g = createDemo('es'),
+    const g = createDemo('es', 'group'),
       p = g.proposals.find((p) => p.id === 'demo-c3')!;
     expect(voterStatus(p, 'alex')).toBe('pending');
     const next = recordSeen(g, 'alex', p.id, 1, '2026-09-26T12:00:00Z');
@@ -16,7 +16,7 @@ describe('read receipts are separate from votes', () => {
     expect(recordSeen(next, 'alex', p.id, 1)).toBe(next);
   });
   it('shows actual votes before read status and resets status for a new revision', () => {
-    let g = recordSeen(createDemo('es'), 'alex', 'demo-c3', 1);
+    let g = recordSeen(createDemo('es', 'group'), 'alex', 'demo-c3', 1);
     g = applyCommand(g, 'alex', { type: 'vote', id: 'demo-c3', revision: 1, choice: 'approve' });
     g = applyCommand(g, 'dani', { type: 'vote', id: 'demo-c3', revision: 1, choice: 'reject' });
     let p = g.proposals.find((p) => p.id === 'demo-c3')!;
@@ -30,7 +30,7 @@ describe('read receipts are separate from votes', () => {
     expect(() => recordSeen(g, 'alex', p.id, 1)).toThrow('stale_revision');
   });
   it('rejects outsiders and excludes the author from the voter roster', () => {
-    const g = createDemo('es');
+    const g = createDemo('es', 'group');
     expect(() => recordSeen(g, 'outsider', 'demo-c3', 1)).toThrow('not_member');
     expect(() => recordSeen(g, 'sam', 'demo-c3', 1)).toThrow('not_allowed');
   });

@@ -4,9 +4,9 @@ Una app para reconocer lo que cada persona aporta y disfrutar de recompensas aco
 
 ## Estado actual
 
-Hay una demo funcional, persistente en el dispositivo, en español e inglés. Permite alternar entre Alex, Sam y Dani para completar aportaciones, mayoría, ajustes, saldo y canjes. No necesita cuentas ni servicios externos.
+Hay una demo funcional, persistente en el dispositivo, en español e inglés. Permite alternar entre Alex y Sam para completar aportaciones, mayoría, ajustes, saldo y canjes. No necesita cuentas ni servicios externos.
 
-También están implementados el cliente de correo/contraseña y Google, las pantallas de grupos/invitaciones y las operaciones PostgreSQL de Supabase. **La autenticación real y la sincronización entre dispositivos aún no se han conectado ni probado**, porque faltan el proyecto Supabase y la configuración OAuth de Google. No es todavía una versión lista para las tiendas.
+También están implementados el cliente de correo/contraseña y Google, las pantallas de grupos/invitaciones y las operaciones PostgreSQL de Supabase. **Supabase y Google están conectados; el acceso real, retorno, persistencia y cierre de sesión se han verificado en web.** Falta la prueba Android y la sincronización con dos cuentas en dos dispositivos. No es todavía una versión lista para las tiendas.
 
 ## Probar ahora
 
@@ -19,7 +19,7 @@ npm ci
 npm run web
 ```
 
-Pulsa **Probar con un grupo de ejemplo**. Cambia de miembro desde Inicio o Grupo para emitir los votos ajenos. En un grupo de tres, los otros dos deben aprobar.
+Pulsa **Probar con una pareja de ejemplo**. Cambia de miembro desde Inicio o Grupo para emitir los votos ajenos. En la demo de pareja, basta la aceptación de la otra persona. Los grupos reales siguen admitiendo más miembros y mayoría.
 
 Para una vista compilada sin servidor de desarrollo:
 
@@ -82,7 +82,7 @@ Para explorar la demo en Expo Go compatible con SDK 57:
 npx expo start --go
 ```
 
-Para Google y enlaces con el esquema propio se necesita un build de desarrollo. Véase [publicación](docs/publicacion.md). Se han generado bundles JavaScript/Hermes para iOS y Android; eso **no equivale** a instalar y probar un binario en un dispositivo.
+Para Google y enlaces con el esquema propio se necesita un binario propio (por ejemplo el APK preview), no Expo Go. Véase [publicación](docs/publicacion.md). Compilar el binario **no equivale** a instalarlo y probarlo en un dispositivo.
 
 ## Conectar cuentas reales
 

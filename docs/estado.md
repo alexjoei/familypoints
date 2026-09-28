@@ -15,19 +15,19 @@ Los controles de cambiar persona existen solo en la demo. El modo conectado depe
 ## Comprobaciones realizadas
 
 - TypeScript y ESLint.
-- 43 pruebas: reglas TypeScript, SQL real con PGlite, estados de lectura y compatibilidad de dependencias.
+- 45 pruebas: reglas TypeScript, SQL real con PGlite, estados de lectura, callbacks OAuth y compatibilidad de dependencias.
 - 6 recorridos Playwright: flujo completo hasta canje aprobado, persistencia/idioma, tamaño móvil/escritorio, ajuste con historial de revisiones, botón global, estilos persistentes y estados individuales de lectura/voto.
 - Compilación web y exportación de bundles iOS/Android.
 - Expo Doctor: 21 comprobaciones correctas.
 - Auditoría npm sin vulnerabilidades tras corregir dependencias transitivas; adaptador documentado en `vendor/decode-uri-component`.
 - Capturas inspeccionadas visualmente; navegación y textos adaptados a 360/390 píxeles.
 
-Estas comprobaciones no certifican OAuth real, una instalación nativa firmada ni concurrencia distribuida en Supabase. No hay credenciales externas configuradas.
+Google OAuth real verificado en web: acceso con la cuenta del propietario, retorno a onboarding, persistencia tras recarga y cierre de sesión. Estas comprobaciones no certifican el retorno OAuth nativo ni concurrencia distribuida entre dispositivos.
 
 ## Para la siguiente sesión
 
-1. Crear/conectar el proyecto Supabase del propietario y aplicar ambas migraciones en orden.
-2. Configurar Google OAuth y el envío de correos.
+1. Instalar el nuevo APK conectado y comprobar Google en Android.
+2. Configurar envío de correos para ampliar las pruebas de correo/contraseña.
 3. Probar con varias cuentas y dispositivos reales.
 4. Resolver los acuerdos pendientes:
    - Qué ocurre al abandonar/expulsar un miembro durante una votación.
@@ -50,3 +50,11 @@ No se han implementado bajas, expulsiones, rectificaciones posteriores a aprobac
 ## Monetización
 
 Sigue gratis, sin anuncios ni cobros implementados. Ideas futuras: automatizaciones, estadísticas y personalización por grupo; mantener gratuito el flujo básico. No se necesita decidir precios para la prueba inicial.
+
+## 28 de septiembre: demo de pareja y preparación de Google
+
+Demo Alex y Sam, una aceptación ajena. Se usa una clave local nueva `fp.demo.couple.v2`; la demo anterior se conserva almacenada pero deja de cargarse. Las cuentas y grupos reales no se modifican.
+
+45 pruebas locales y 6 recorridos web correctos. Se conserva cobertura de mayorías para grupos de más de dos. Retorno Google probado con callbacks concurrentes y reintento tras error. `npm run check:auth` confirma Supabase accesible y Google habilitado. El APK 0.1.1 no contiene estos cambios. No se han activado pagos; demo y login permanecen gratuitos.
+
+Configuración externa del 28 de septiembre: proyecto Supabase qvrfzvsciconvswrjbhy creado en Irlanda (Free). Ambas migraciones aplicadas mediante SQL Editor en una transacción; seis tablas verificadas con RLS activo. URL y clave pública configuradas en .env (excluido de Git) y EAS preview. Google Cloud familypoints-510007: cliente Web Family Points Supabase creado y conectado al proveedor Google. Secreto guardado únicamente en Supabase, nunca en el repositorio ni APK. Retornos permitidos: familypoints://auth/callback, http://127.0.0.1:4173/auth/callback y http://localhost:8081/auth/callback. No volver a ejecutar las migraciones iniciales sobre este proyecto.

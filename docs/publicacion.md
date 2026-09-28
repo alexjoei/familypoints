@@ -102,3 +102,17 @@ Expo y Supabase tienen niveles gratuitos con límites; Supabase pausa proyectos 
 Fuentes: [Expo](https://docs.expo.dev/billing/plans/), [Supabase](https://supabase.com/pricing), [Apple](https://developer.apple.com/support/compare-memberships/), [Google Play](https://support.google.com/googleplay/android-developer/answer/6112435).
 
 No hay anuncios, compras ni SDK de seguimiento publicitario.
+
+## Comprobar Google antes del siguiente APK
+
+1. Configurar las dos variables públicas de `.env.example` en `.env`.
+2. Aplicar ambas migraciones SQL al proyecto Supabase.
+3. Configurar un cliente OAuth Web de Google con el callback HTTPS que muestra el proveedor Google de Supabase. Guardar ID y secreto en Supabase, nunca en la app. Solo se solicitan openid, email y profile; estos permisos básicos están exceptuados de la lista de usuarios de prueba ([Google](https://support.google.com/cloud/answer/15549945?hl=en)).
+4. Permitir `familypoints://auth/callback` en las redirecciones de Supabase.
+5. Ejecutar `npm run check:auth`: comprueba conectividad y proveedor Google habilitado, sin mostrar claves. No sustituye al login real.
+6. Añadir `EXPO_PUBLIC_SUPABASE_URL` y `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` al entorno `preview` de EAS y recompilar. Los APK antiguos no reciben esta configuración automáticamente.
+7. En dos móviles, entrar con Google con cuentas diferentes, crear un grupo e invitar a la otra persona; sumar, aceptar y canjear. Cerrar y reabrir la app, cerrar sesión, cancelar Google y volver a entrar.
+
+El 28 de septiembre se conectaron Supabase y Google, se aplicaron ambas migraciones y se configuraron `.env` y las variables públicas de EAS preview. Acceso real, retorno, persistencia y cierre de sesión verificados en Chrome local. Pendiente prueba de Android y dos cuentas en móviles. El retorno usa PKCE con navegador del sistema, selección de cuenta y un único intercambio compartido entre callbacks concurrentes de Android. Google permanece en Testing; no se ha publicado en tiendas ni contratado un plan de pago.
+
+Al cambiar variables públicas, limpiar la caché del bundle: `npm run export:web -- --clear`. Para el APK usar `npx eas-cli@latest build --profile preview --platform android --clear-cache`.

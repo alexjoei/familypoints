@@ -3,7 +3,7 @@ test('the centered add button stays available on every group screen without rese
   page,
 }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Probar con un grupo de ejemplo' }).click();
+  await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
   for (const tab of ['Inicio', 'Pendientes', 'Canjes', 'Historial', 'Grupo']) {
     await page.getByRole('tab', { name: tab, exact: false }).click();
     const button = page.getByTestId('add-family-points');
@@ -29,7 +29,7 @@ test('themes are selectable, applied throughout the app, and survive a reload', 
 }) => {
   await page.setViewportSize({ width: 360, height: 780 });
   await page.goto('/');
-  await page.getByRole('button', { name: 'Probar con un grupo de ejemplo' }).click();
+  await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
   for (const theme of ['Calma', 'Noche', 'Pop']) {
     await page.getByRole('tab', { name: 'Grupo' }).click();
     await page.getByRole('radio', { name: theme, exact: true }).click();
@@ -45,7 +45,7 @@ test('themes are selectable, applied throughout the app, and survive a reload', 
   await page.getByRole('radio', { name: 'Noche', exact: true }).click();
   await page.getByRole('tab', { name: 'Inicio' }).click();
   await page.reload();
-  await page.getByRole('button', { name: 'Probar con un grupo de ejemplo' }).click();
+  await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
   await page.getByRole('tab', { name: 'Grupo' }).click();
   await expect(page.getByRole('radio', { name: 'Noche', exact: true })).toBeChecked();
   await page.getByTestId('add-family-points').click();
@@ -55,22 +55,19 @@ test('pending cards show each voter, distinguish viewing from voting and show bo
   page,
 }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Probar con un grupo de ejemplo' }).click();
+  await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
   await page.getByRole('tab', { name: 'Pendientes' }).click();
   await expect(page.getByLabel('Alex: Pendiente', { exact: true })).toBeVisible();
-  await expect(page.getByLabel('Dani: Pendiente', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('Dani: Pendiente', { exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Ver detalle' }).click();
   await expect(page.getByLabel('Alex: Visto, sin votar', { exact: true })).toBeVisible();
-  await expect(page.getByText('0 de 2 aprobaciones · revisión 1')).toBeVisible();
+  await expect(page.getByText('0 de 1 aprobaciones · revisión 1')).toBeVisible();
   await page.getByRole('button', { name: 'Volver', exact: true }).click();
   await expect(page.getByLabel('Alex: Visto, sin votar', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Aceptar', exact: true }).click();
-  await expect(page.getByLabel('Alex: Aprobado', { exact: true })).toBeVisible();
-  await page.getByRole('tab', { name: 'Inicio' }).click();
-  await page.getByRole('button', { name: 'Dani', exact: true }).click();
-  await page.getByRole('tab', { name: 'Pendientes' }).click();
   await page.getByRole('button', { name: 'Rechazar', exact: true }).click();
-  await expect(page.getByLabel('Alex: Aprobado', { exact: true })).toBeVisible();
-  await expect(page.getByLabel('Dani: Rechazado', { exact: true })).toBeVisible();
+  await expect(page.getByText('Sam quiere sumar 15 puntos')).toHaveCount(0);
+  await page.getByRole('tab', { name: 'Historial' }).click();
+  await page.getByRole('button', { name: 'Ver detalle' }).first().click();
+  await expect(page.getByLabel('Alex: Rechazado', { exact: true })).toBeVisible();
   await page.screenshot({ path: 'artifacts/voter-states.png', fullPage: true });
 });

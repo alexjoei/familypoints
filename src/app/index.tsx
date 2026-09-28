@@ -272,7 +272,7 @@ export default function Welcome() {
         </Txt>
       )}
       <Button
-        label={t('Probar con un grupo de ejemplo', 'Try an example group')}
+        label={t('Probar con una pareja de ejemplo', 'Try an example couple')}
         icon="play-outline"
         variant="secondary"
         onPress={() => run(app.startDemo)}

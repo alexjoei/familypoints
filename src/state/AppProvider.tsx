@@ -125,7 +125,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const persistDemo = useCallback((next: Group) => {
     const write = demoWrites.current
       .catch(() => {})
-      .then(() => AsyncStorage.setItem('fp.demo.v1', JSON.stringify(next)));
+      .then(() => AsyncStorage.setItem('fp.demo.couple.v2', JSON.stringify(next)));
     demoWrites.current = write;
     return write;
   }, []);
@@ -340,7 +340,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }
   async function startDemo() {
-    const raw = await AsyncStorage.getItem('fp.demo.v1');
+    const raw = await AsyncStorage.getItem('fp.demo.couple.v2');
     let value: Group;
     try {
       value = raw ? JSON.parse(raw) : createDemo(language);

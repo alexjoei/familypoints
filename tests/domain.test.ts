@@ -29,7 +29,7 @@ describe('group agreements', () => {
     expect(quorum(Array.from({ length: n }, (_, i) => String(i)))).toBe(want),
   );
   it('does not credit pending contributions; approval updates only future suggestions', () => {
-    let g = createDemo('es');
+    let g = createDemo('es', 'group');
     const before = balance(g, 'alex').available;
     g = applyCommand(g, 'alex', command);
     expect(balance(g, 'alex').available).toBe(before);
@@ -42,20 +42,20 @@ describe('group agreements', () => {
     expect(() => vote(g, 'dani')).toThrow('already_closed');
   });
   it('blocks self-votes, duplicate votes and outsiders', () => {
-    let g = applyCommand(createDemo('es'), 'alex', command);
+    let g = applyCommand(createDemo('es', 'group'), 'alex', command);
     expect(() => vote(g, 'alex')).toThrow('self_vote');
     expect(() => vote(g, 'outsider')).toThrow('not_member');
     g = vote(g, 'sam');
     expect(() => vote(g, 'sam')).toThrow('already_voted');
   });
   it('keeps a tied proposal pending', () => {
-    let g = applyCommand(createDemo('es'), 'alex', command);
+    let g = applyCommand(createDemo('es', 'group'), 'alex', command);
     g = vote(g, 'sam');
     g = vote(g, 'dani', 'new', 'reject');
     expect(g.proposals.find((p) => p.id === 'new')?.status).toBe('pending');
   });
   it('requires author acceptance of adjustments and fresh votes, preserving the old record', () => {
-    let g = applyCommand(createDemo('es'), 'alex', command);
+    let g = applyCommand(createDemo('es', 'group'), 'alex', command);
     g = vote(g, 'sam');
     g = applyCommand(g, 'dani', { type: 'adjust', id: 'new', revision: 1, points: 10 });
     expect(() => vote(g, 'dani')).toThrow('adjustment_pending');
@@ -71,7 +71,7 @@ describe('group agreements', () => {
     expect(balance(g, 'alex').available).toBe(50);
   });
   it('can reject and resubmit without crediting the rejected revision', () => {
-    let g = applyCommand(createDemo('es'), 'alex', command);
+    let g = applyCommand(createDemo('es', 'group'), 'alex', command);
     g = vote(vote(g, 'sam', 'new', 'reject'), 'dani', 'new', 'reject');
     g = applyCommand(g, 'alex', {
       type: 'resubmit',
@@ -85,7 +85,7 @@ describe('group agreements', () => {
     expect(g.proposals.find((p) => p.id === 'new')?.revision).toBe(2);
   });
   it('reserves funds immediately, prevents overspending, and releases on withdrawal', () => {
-    let g = createDemo('es');
+    let g = createDemo('es', 'group');
     const cmd = { ...command, kind: 'redemption' as const, rewardId: 'demo-r1', points: 1 };
     g = applyCommand(g, 'alex', cmd);
     expect(balance(g, 'alex')).toMatchObject({ available: 10, reserved: 30, spent: 0 });
@@ -94,7 +94,7 @@ describe('group agreements', () => {
     expect(balance(g, 'alex').available).toBe(40);
   });
   it('spends a reserved redemption only once', () => {
-    let g = applyCommand(createDemo('es'), 'alex', {
+    let g = applyCommand(createDemo('es', 'group'), 'alex', {
       ...command,
       kind: 'redemption',
       rewardId: 'demo-r1',
@@ -104,7 +104,7 @@ describe('group agreements', () => {
     expect(() => vote(g, 'sam')).toThrow('already_closed');
   });
   it('updates reward price for future redemptions only', () => {
-    let g = applyCommand(createDemo('es'), 'alex', {
+    let g = applyCommand(createDemo('es', 'group'), 'alex', {
       ...command,
       kind: 'redemption',
       rewardId: 'demo-r1',
@@ -126,12 +126,12 @@ describe('group agreements', () => {
     expect(g.proposals.find((p) => p.id === 'new')?.points).toBe(30);
   });
   it.each([0, -1, 1.5, Infinity, NaN, 100001])('rejects invalid points %s', (points) =>
-    expect(() => applyCommand(createDemo('es'), 'alex', { ...command, points })).toThrow(
+    expect(() => applyCommand(createDemo('es', 'group'), 'alex', { ...command, points })).toThrow(
       'invalid_points',
     ),
   );
   it('rejects impossible dates and template/category mismatch', () => {
-    const g = createDemo('es');
+    const g = createDemo('es', 'group');
     expect(() => applyCommand(g, 'alex', { ...command, date: '2026-02-30' })).toThrow(
       'invalid_date',
     );
@@ -140,7 +140,7 @@ describe('group agreements', () => {
     );
   });
   it('does not mutate the source on failed or successful actions', () => {
-    const g = createDemo('es'),
+    const g = createDemo('es', 'group'),
       before = JSON.stringify(g);
     applyCommand(g, 'alex', command);
     expect(JSON.stringify(g)).toBe(before);

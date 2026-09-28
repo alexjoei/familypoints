@@ -5,6 +5,7 @@ import * as Crypto from 'expo-crypto';
 import * as WebBrowser from 'expo-web-browser';
 import { makeRedirectUri } from 'expo-auth-session';
 import { createClient, processLock } from '@supabase/supabase-js';
+import { createCodeExchange } from './auth-code';
 
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const key = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -70,7 +71,11 @@ if (supabase && Platform.OS !== 'web') {
 }
 WebBrowser.maybeCompleteAuthSession();
 export const authRedirect = () =>
-  makeRedirectUri({ scheme: 'familypoints', path: 'auth/callback' });
+  makeRedirectUri({
+    scheme: 'familypoints',
+    path: 'auth/callback',
+    native: 'familypoints://auth/callback',
+  });
 export async function googleLogin() {
   if (!supabase) throw new Error('not_configured');
   const redirectTo = authRedirect();
@@ -80,6 +85,7 @@ export async function googleLogin() {
       redirectTo,
       skipBrowserRedirect: Platform.OS !== 'web',
       scopes: 'openid email profile',
+      queryParams: { prompt: 'select_account' },
     },
   });
   if (error) throw error;
@@ -88,7 +94,11 @@ export async function googleLogin() {
     if (result.type === 'success') await finishNativeAuth(result.url);
   }
 }
-let lastCode: string | undefined;
+const exchangeCode = createCodeExchange(async (code) => {
+  if (!supabase) throw new Error('not_configured');
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  if (error) throw error;
+});
 export async function finishNativeAuth(url: string) {
   if (!supabase || Platform.OS === 'web') return;
   const parsed = new URL(url);
@@ -100,12 +110,5 @@ export async function finishNativeAuth(url: string) {
     return;
   if (parsed.searchParams.get('error')) throw new Error('auth_failed');
   const code = parsed.searchParams.get('code');
-  if (code && code !== lastCode) {
-    lastCode = code;
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (error) {
-      lastCode = undefined;
-      throw error;
-    }
-  }
+  if (code) await exchangeCode(code);
 }
