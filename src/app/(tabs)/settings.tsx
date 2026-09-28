@@ -1,18 +1,16 @@
 import { useState } from 'react';
-import { Share, Switch, View } from 'react-native';
+import { Switch, View } from 'react-native';
 import * as Crypto from 'expo-crypto';
-import * as Linking from 'expo-linking';
+import { router } from 'expo-router';
 import { Button, Card, Chip, Field, Page, Txt, useUi } from '../../components/ui';
 import { useApp } from '../../state/AppProvider';
-import { supabase } from '../../lib/supabase';
 import { Template } from '../../domain/model';
 import { ThemePicker } from '../../components/ThemePicker';
 export default function Settings() {
   const { colors, s } = useUi();
   const app = useApp(),
     { group: g, t } = app;
-  const [code, setCode] = useState<{ code: string; expires: string } | null>(null),
-    [category, setCategory] = useState(''),
+  const [category, setCategory] = useState(''),
     [edit, setEdit] = useState<Template | null>(null),
     [working, setWorking] = useState(false);
   if (!g) return null;
@@ -35,6 +33,17 @@ export default function Settings() {
         'Your crew. Your rules. Zero ceremony.',
       )}
     >
+      {app.actor === g.owner && !app.demo && (
+        <Card style={{ backgroundColor: colors.mint }}>
+          <Txt style={s.subtitle}>{t('Compartir grupo', 'Share group')}</Txt>
+          <Txt>{t('Tu código de invitación, a un toque.', 'Your invitation code, one tap away.')}</Txt>
+          <Button
+            label={t('Compartir grupo', 'Share group')}
+            icon="share-social-outline"
+            onPress={() => router.push('/share')}
+          />
+        </Card>
+      )}
       <ThemePicker />
       {app.demo && (
         <Card style={{ backgroundColor: colors.peach }}>
@@ -87,58 +96,6 @@ export default function Settings() {
           )}
         </Txt>
       </Card>
-      {owner && !app.demo && (
-        <Card>
-          <Txt style={s.subtitle}>{t('Hay sitio para alguien más', 'Room for someone else')}</Txt>
-          <Button
-            label={t('Ver invitación', 'Show invitation')}
-            variant="secondary"
-            disabled={working}
-            onPress={() =>
-              run(async () => {
-                const { data, error } = await supabase!.rpc('fp_invite', { p_group: g.id });
-                if (error) throw error;
-                setCode(data);
-              })
-            }
-          />
-          {code && (
-            <>
-              <Txt selectable>{code.code}</Txt>
-              <Txt style={s.muted}>
-                {t('Caduca: ', 'Expires: ')}
-                {new Date(code.expires).toLocaleString(app.language)}
-              </Txt>
-              <Button
-                label={t('Compartir invitación', 'Share invitation')}
-                onPress={() =>
-                  run(() =>
-                    Share.share({
-                      message: `${g.name}\n${Linking.createURL('join', { scheme: 'familypoints', queryParams: { code: code.code } })}\n${code.code}`,
-                    }),
-                  )
-                }
-              />
-              <Button
-                label={t('Renovar y anular código anterior', 'Renew and invalidate previous code')}
-                variant="ghost"
-                disabled={working}
-                onPress={() =>
-                  run(async () => {
-                    const { data, error } = await supabase!.rpc('fp_invite', {
-                      p_group: g.id,
-                      p_rotate: true,
-                    });
-                    if (error) throw error;
-                    setCode(data);
-                    await app.refresh();
-                  })
-                }
-              />
-            </>
-          )}
-        </Card>
-      )}
       <Card>
         <Txt style={s.subtitle}>{t('A tu manera', 'Your way')}</Txt>
         <View style={s.between}>
@@ -268,7 +225,7 @@ export default function Settings() {
         onPress={() => run(app.exit)}
       />
       <Txt style={{ textAlign: 'center', fontSize: 12, color: colors.muted }}>
-        Family Points · 0.1.0
+        Family Points · 0.1.3
       </Txt>
     </Page>
   );

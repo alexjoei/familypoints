@@ -8,6 +8,8 @@ Hay una demo funcional, persistente en el dispositivo, en español e inglés. Pe
 
 También están implementados el cliente de correo/contraseña y Google, las pantallas de grupos/invitaciones y las operaciones PostgreSQL de Supabase. **Supabase y Google están conectados; el acceso real, retorno, persistencia y cierre de sesión se han verificado en web.** Falta la prueba Android y la sincronización con dos cuentas en dos dispositivos. No es todavía una versión lista para las tiendas.
 
+Al crear un grupo se abre **Compartir grupo** con su código visible. El creador también puede llegar desde Inicio o Grupo, copiar el código o compartirlo con otra app. El invitado entra con Google y usa **Unirme al grupo** con ese código. Los códigos caducan a los siete días y pueden renovarse desde la misma pantalla.
+
 ## Probar ahora
 
 **Android instalable:** [APK de prueba 0.1.2](https://expo.dev/artifacts/eas/gQB6TfohJGUTldRl2NwnsDze3BqnOCNyuLqIobItmho.apk). [Instrucciones y estado de verificación](docs/apk-prueba.md).

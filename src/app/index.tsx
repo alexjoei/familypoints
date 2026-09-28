@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ActivityIndicator, View } from 'react-native';
-import { Redirect, useLocalSearchParams } from 'expo-router';
+import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../state/AppProvider';
 import { Button, Card, Chip, Field, Icon, Page, Txt, useUi } from '../components/ui';
 import { authRedirect, configured, googleLogin, supabase } from '../lib/supabase';
@@ -75,7 +75,12 @@ export default function Welcome() {
           />
           <Button
             label={t('Crear grupo', 'Create group')}
-            onPress={() => run(() => app.createGroup(name, display))}
+            onPress={() =>
+              run(async () => {
+                await app.createGroup(name, display);
+                router.replace('/share');
+              })
+            }
             disabled={!name.trim() || !display.trim() || busy}
           />
         </Card>

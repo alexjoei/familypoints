@@ -66,6 +66,26 @@ export default function Home() {
           onPress={() => router.push('/(tabs)/rewards')}
         />
       </View>
+      {!app.demo && app.actor === g.owner && (
+        <Card style={{ backgroundColor: colors.mint }}>
+          <Txt style={s.subtitle}>
+            {g.members.length === 1
+              ? t('Ya tienes grupo. Falta tu gente.', 'Your group is ready. Invite your people.')
+              : t('¿Alguien más se apunta?', 'Anyone else joining?')}
+          </Txt>
+          <Txt>
+            {t(
+              'Comparte el código para que se unan desde su móvil.',
+              'Share the code so they can join from their own phone.',
+            )}
+          </Txt>
+          <Button
+            label={t('Compartir grupo', 'Share group')}
+            icon="share-social-outline"
+            onPress={() => router.push('/share')}
+          />
+        </Card>
+      )}
       {pending.length > 0 && (
         <Card style={{ backgroundColor: colors.peach, borderColor: colors.peach }}>
           <View style={s.row}>
