@@ -1,31 +1,23 @@
 # APK de prueba — 28 de septiembre de 2026
 
-Family Points 0.1.2, Android versionCode 3, paquete `app.familypoints.mobile`. Misma firma que las versiones anteriores; instalar como actualización. Incluye demo de pareja Alex y Sam y Google conectado a Supabase.
+La versión **0.1.6** (Android versionCode 8, `app.familypoints.mobile`) está [en la cola de EAS](https://expo.dev/accounts/alexjoei/projects/family-points/builds/b86ca8af-2c75-46b3-bb52-7cd4ba17fa41). Se compila desde el commit `77dd18cb94e2c63377b5468b96017a18bbf0049f`. Publicaremos aquí el enlace directo cuando EAS entregue y verifiquemos el APK.
 
-- [Descargar APK](https://expo.dev/artifacts/eas/gQB6TfohJGUTldRl2NwnsDze3BqnOCNyuLqIobItmho.apk)
-- [Build finalizado en Expo](https://expo.dev/accounts/alexjoei/projects/family-points/builds/f6d29cb5-3ce9-4039-89f2-c8467003640c)
-- Commit compilado: `69a936cdb2100615512bd66708947e24723c1604`.
-- Copia local: `artifacts/family-points-0.1.2.apk` (98.356.012 bytes).
-- SHA256: `F9D14A89B65E27F5CBEC536EE6822A8F39C2DE8A114C2FDFD929A53C717D9F00`.
-- GitHub Actions: comprobaciones correctas para el commit compilado.
+El [APK 0.1.4](https://expo.dev/artifacts/eas/DcHWFZWGZnYSoraJKjol8WTKdH7oFbHoOJbQmX8zDeM.apk) es la última descarga disponible, pero **no incluye** las mejoras recientes de pareja, fecha, historial, fotos y saldo negativo acordado.
 
-Abrir el enlace desde Android, descargar y abrir el archivo. Si Android lo solicita, permitir a ese navegador instalar aplicaciones. No necesita Expo Go ni servidor local.
+## Qué probar en 0.1.6
 
-## Probar entre dos
+1. Instalar el APK en dos Android y entrar con cuentas de Google distintas.
+2. Crear una pareja, compartir el código e introducirlo en el segundo móvil.
+3. Sumar puntos en un móvil. En el otro, aceptar, rechazar o proponer otra cantidad. Si quien sumó acepta el ajuste, los puntos deben quedar aprobados sin otro paso.
+4. Revisar el saldo individual y el historial agrupado. Probar el selector de fecha y una foto opcional.
+5. Crear y aprobar un canje. El saldo negativo empieza desactivado; solo se habilita si ambos aprueban un límite en Grupo.
+6. Cerrar y abrir la app para comprobar que conserva la sesión y los datos.
 
-1. Entrar con Google en ambos móviles con cuentas distintas.
-2. Uno crea el grupo y comparte el código; el otro se une.
-3. Sumar puntos en un móvil, aceptar en el otro y comprobar puntos acumulados e historial.
-4. Crear un canje acordado, aprobarlo y canjear puntos; revisar el saldo.
-5. Cerrar/reabrir la app y cerrar sesión/entrar otra vez. Comprobar también la cancelación de Google.
+La demo de pareja funciona sin cuenta, pero sus datos son locales y no se sincronizan. El acceso Google de este APK sigue usando la página alojada de Supabase: Google nativo Android está desactivado hasta configurar y verificar el cliente OAuth Android. La instalación, el retorno de Google y la sincronización entre dos dispositivos físicos aún requieren prueba.
 
-La opción **Probar con una pareja de ejemplo** sigue funcionando sin cuenta. Sus datos son locales y no se sincronizan ni se convierten en un grupo real.
+## Verificación del código
 
-## Verificación
-
-EAS FINISHED, APK descargado y presencia de manifiesto Android, código DEX y bundle integrado comprobada. TypeScript, lint, 45 pruebas y 6 recorridos web correctos. Google real verificado en Chrome: acceso, retorno, persistencia y cierre de sesión. Falta instalación y retorno OAuth en Android físico y prueba de sincronización entre dos cuentas/dispositivos.
-
-Enlace enviado al chat de WhatsApp **alex propio**. El adjunto directo fue bloqueado por el permiso de archivos locales de la extensión de Chrome; se entregó el enlace de descarga.
+51 pruebas, TypeScript, lint, nueve recorridos web, export web y Android correctos. La migración `202609280006_couple_flow.sql` se aplicó en Supabase. Falta la verificación estructural del APK cuando EAS finalice.
 
 ## Recompilar
 
@@ -34,4 +26,4 @@ $env:NODE_USE_SYSTEM_CA = '1'
 npx eas-cli@latest build --platform android --profile preview --clear-cache
 ```
 
-Las variables públicas de Supabase están en EAS preview. El secreto OAuth solo está en Supabase. Mantener la firma Android del proyecto para actualizar instalaciones existentes. No se ha enviado a Google Play ni contratado un plan nuevo.
+Las variables públicas de Supabase están en EAS preview. El secreto OAuth solo está en Supabase. Conservar la firma Android del proyecto permite instalar nuevas versiones como actualización. No se ha enviado a Google Play ni contratado un plan nuevo.
