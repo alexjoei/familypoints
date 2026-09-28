@@ -12,7 +12,7 @@ Al crear un grupo se abre **Compartir grupo** con su código visible. El creador
 
 ## Probar ahora
 
-**Android instalable:** [APK de prueba 0.1.4](https://expo.dev/artifacts/eas/DcHWFZWGZnYSoraJKjol8WTKdH7oFbHoOJbQmX8zDeM.apk). La versión 0.1.5 está en preparación. [Instrucciones y estado de verificación](docs/apk-prueba.md).
+**Android instalable:** [APK de prueba 0.1.4](https://expo.dev/artifacts/eas/DcHWFZWGZnYSoraJKjol8WTKdH7oFbHoOJbQmX8zDeM.apk). La versión 0.1.6 está en preparación. [Instrucciones y estado de verificación](docs/apk-prueba.md).
 
 Requisitos: Node.js 24 LTS (Expo requiere al menos 22.13) y npm.
 
@@ -56,7 +56,9 @@ No hace falta desactivar TLS ni cambiar certificados globales.
 - Botón + centrado abajo en todas las pantallas del grupo: Añadir Family Points.
 - Puntos acumulados y Canjear puntos, con textos más informales.
 - Estilos Pop (predeterminado), Calma, Noche y Club, elegibles en Grupo y guardados en el dispositivo.
-- Saldo de cada miembro en Grupo; canjes hasta -100 puntos por defecto, con un límite de 0 a 100 modificable por mayoría.
+- Saldo de cada miembro en Grupo; saldo negativo desactivado de inicio, con un límite de 0 a 100 activable por acuerdo.
+- En una pareja, aceptar los puntos ajustados cierra la aportación sin otro voto; el historial agrupa los pasos de cada solicitud.
+- Selector visual de fecha con «Hoy» por defecto.
 - Formulario de aportación más corto: categoría desplegable, pocas ideas iniciales y foto opcional de hasta 2 MB, visible solo al grupo.
 - Estado de cada votante: pendiente, visto sin votar, aprobado o rechazado. Abrir el detalle marca la revisión como vista; aparecer en la lista no lo hace.
 

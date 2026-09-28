@@ -2,6 +2,10 @@
 
 ## Estado más reciente (28 septiembre, 17:32 Madrid)
 
+**Actualización posterior:** el usuario pidió simplificar el flujo de pareja, usar «tu pareja», selector de fecha, historial agrupado y consentimiento para saldo negativo. Todo ello está implementado en la versión 0.1.6 local. Pasan 51 pruebas TypeScript/SQL, typecheck, lint y 9 E2E web; export Android y web correctos. La migración `202609280006_couple_flow.sql` requiere despliegue en Supabase. El build 0.1.5 `0299174f-d8b6-453b-945f-f04ce0e1a9b7` se canceló para evitar distribuir el flujo anterior. Falta commit/push, despliegue de migración 006, nuevo APK y prueba física.
+
+El usuario reiteró que el APK terminado se envíe por WhatsApp al contacto exacto «Alex» y nombró la skill `computer-use:computer-use`. La restricción de auto-review sobre la pestaña WhatsApp anterior sigue vigente; no usarla ni rodearla. Se solicitó al usuario @mención de la pestaña anónima correcta y no se recibió aún una identificación en este relevo.
+
 Los cambios de saldos por miembro, límite negativo votado, formulario compacto, foto opcional y tema Club están publicados en `main` (`e925fab`, `756f884`). Las migraciones 004 y 005 se ejecutaron correctamente en el SQL Editor de Supabase. Pasan 48 pruebas locales, typecheck, lint, 9 E2E web (incluida foto), Expo Doctor 21/21 y CI de ambos commits. Google nativo continúa desactivado por falta del cliente OAuth Android; el APK usa el flujo alojado de Supabase.
 
 APK 0.1.5/versionCode 7, build EAS `0299174f-d8b6-453b-945f-f04ce0e1a9b7`: https://expo.dev/accounts/alexjoei/projects/family-points/builds/0299174f-d8b6-453b-945f-f04ce0e1a9b7 . En cola a las 17:32; esperar FINISHED, descargar y verificar el APK, actualizar `docs/apk-prueba.md` y README. La build anterior `3fbeaf0e-0773-45a4-b2c2-7ef57ff513ba` se canceló porque se corrigió la lectura nativa de fotos con `expo-file-system`. El preview web se sirve en `http://localhost:4173` mediante `node scripts/serve-web.mjs`; comprobar que sigue activo si cambia el turno.

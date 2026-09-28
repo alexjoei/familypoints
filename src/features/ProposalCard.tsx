@@ -40,6 +40,8 @@ export function ProposalCard({
           ? t('CAMBIO DE COSTE', 'COST CHANGE')
           : t('NUEVA OPCIÓN DE CANJE', 'NEW REDEMPTION OPTION');
   const author = g?.members.find((m) => m.id === p.author)?.name;
+  const couple = g?.members.length === 2;
+  const partner = g?.members.find((m) => m.id !== p.author)?.name ?? t('tu pareja', 'your partner');
   return (
     <Card>
       <View style={s.between}>
@@ -81,13 +83,13 @@ export function ProposalCard({
               )
             : p.adjustment
               ? t(
-                  'Esperando a que quien lo pidió revise la nueva cantidad.',
-                  'Waiting for the requester to review the new amount.',
+                  couple ? `Esperando a que ${author} acepte los ${p.adjustment.points} puntos.` : 'Esperando a que quien lo pidió revise la nueva cantidad.',
+                  couple ? `Waiting for ${author} to accept ${p.adjustment.points} points.` : 'Waiting for the requester to review the new amount.',
                 )
               : own
                 ? t(
-                    'Esperando a que el resto del grupo acepte.',
-                    'Waiting for the other members to accept.',
+                    couple ? `Esperando a que ${partner} acepte.` : 'Esperando a que el resto del grupo acepte.',
+                    couple ? `Waiting for ${partner} to accept.` : 'Waiting for the other members to accept.',
                   )
                 : canVote
                   ? p.kind === 'debt_limit'
@@ -113,13 +115,13 @@ export function ProposalCard({
       </Txt>
       {!!p.note && <Txt>{p.note}</Txt>}
       {photoUrl && <Image source={{ uri: photoUrl }} style={{ width: '100%', height: 190, borderRadius: 14 }} resizeMode="cover" />}
-      <Txt style={{ fontSize: 13, fontWeight: '600' }}>
+      {!couple && <Txt style={{ fontSize: 13, fontWeight: '600' }}>
         {t(
           `${votes.filter((v) => v.choice === 'approve').length} de ${quorum(p.electorate)} aprobaciones`,
           `${votes.filter((v) => v.choice === 'approve').length} of ${quorum(p.electorate)} approvals`,
         )}{' '}
         · {t(`revisión ${p.revision}`, `revision ${p.revision}`)}
-      </Txt>
+      </Txt>}
       {p.status === 'pending' && (
         <>
           {p.electorate.length === 0 && (
@@ -141,7 +143,7 @@ export function ProposalCard({
               {own ? (
                 <>
                   <Button
-                    label={t('Aceptar ajuste y volver a votar', 'Accept adjustment and vote again')}
+                    label={couple ? t('Aceptar los nuevos puntos', 'Accept the new points') : t('Aceptar ajuste y volver a votar', 'Accept adjustment and vote again')}
                     disabled={busy}
                     onPress={() =>
                       execute({ type: 'accept_adjustment', id: p.id, revision: p.revision })
@@ -158,7 +160,7 @@ export function ProposalCard({
                 </>
               ) : (
                 <Txt style={s.muted}>
-                  {t('Esperando la respuesta del autor.', 'Waiting for the author to respond.')}
+                  {t(couple ? `Esperando la respuesta de ${author}.` : 'Esperando la respuesta del autor.', couple ? `Waiting for ${author} to respond.` : 'Waiting for the author to respond.')}
                 </Txt>
               )}
             </View>
@@ -263,7 +265,7 @@ export function ProposalCard({
           onPress={() => router.push({ pathname: '/contribute', params: { id: p.id } })}
         />
       )}
-      {p.votes.some((v) => v.revision !== p.revision) && (
+      {detail && p.votes.some((v) => v.revision !== p.revision) && (
         <Txt style={s.muted}>
           {t(
             'Los votos de revisiones anteriores se conservan en el historial.',

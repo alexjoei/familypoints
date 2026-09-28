@@ -28,7 +28,7 @@ export function createDemo(language: Language, variant: 'couple' | 'group' = 'co
     ],
     categories: templates.map((t) => t.category),
     templates,
-    debtLimit: 100,
+    debtLimit: 0,
     proposals: [],
     activity: [],
   };

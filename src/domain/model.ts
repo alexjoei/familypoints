@@ -34,6 +34,7 @@ export type Activity = {
   points?: number;
   proposalId?: string;
 };
+export type ActivityCluster = { id: string; proposal?: Proposal; events: Activity[]; latest: Activity };
 export type Group = {
   id: string;
   name: string;
@@ -110,6 +111,27 @@ export function balance(group: Group, member: string) {
     .filter((p) => p.kind === 'redemption' && p.status === 'pending')
     .reduce((n, p) => n + p.points, 0);
   return { earned, spent, reserved, total: earned - spent, available: earned - spent - reserved };
+}
+export function activityClusters(group: Group): ActivityCluster[] {
+  const clusters = new Map<string, ActivityCluster>();
+  const order = new Map<string, number>();
+  for (const [index, event] of group.activity.entries()) {
+    const id = event.proposalId ?? event.id;
+    order.set(id, index);
+    const cluster = clusters.get(id);
+    if (cluster) {
+      cluster.events.push(event);
+      cluster.latest = event;
+    } else {
+      clusters.set(id, {
+        id,
+        proposal: group.proposals.find((p) => p.id === event.proposalId),
+        events: [event],
+        latest: event,
+      });
+    }
+  }
+  return [...clusters.values()].sort((a, b) => (order.get(b.id) ?? 0) - (order.get(a.id) ?? 0));
 }
 export function rewardCost(group: Group, reward: Proposal) {
   // Proposals are ordered by creation; use the latest approval event, not creation time.
@@ -205,7 +227,7 @@ export function applyCommand(
       title = reward.title;
       if (cmd.kind === 'redemption') {
         points = rewardCost(g, reward);
-        requireThat(balance(g, actor).available - points >= -(g.debtLimit ?? 100), 'insufficient_balance');
+        requireThat(balance(g, actor).available - points >= -(g.debtLimit ?? 0), 'insufficient_balance');
       }
     }
     g.proposals.push({
@@ -270,9 +292,19 @@ export function applyCommand(
     requireThat(actor === p.author && p.adjustment, 'author_only');
     if (cmd.type === 'accept_adjustment') {
       archive();
+      const adjuster = p.adjustment.actor;
       p.points = p.adjustment.points;
       p.revision++;
       event('adjustment_accepted', p.title, p.points, p.id);
+      if (p.electorate.length === 1) {
+        p.votes.push({ actor: adjuster, choice: 'approve', revision: p.revision, at });
+        p.status = 'approved';
+        event('approved', p.title, p.points, p.id);
+        if (p.kind === 'contribution' && p.templateId) {
+          const template = g.templates.find((t) => t.id === p.templateId);
+          if (template) template.points = p.points;
+        }
+      }
     } else event('adjustment_declined', p.title, p.adjustment.points, p.id);
     delete p.adjustment;
     return g;

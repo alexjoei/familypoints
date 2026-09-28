@@ -97,21 +97,29 @@ export default function Settings() {
         <Txt style={s.subtitle}>{t('Nuestros acuerdos', 'Our agreements')}</Txt>
         <Txt>
           {t(
-            `Saldo individual · Hasta ${g.debtLimit ?? 100} puntos negativos · Sin autovotos`,
-            `Individual balances · Up to ${g.debtLimit ?? 100} negative points · No self-voting`,
+            `Saldo individual · ${g.debtLimit ? `Hasta ${g.debtLimit} puntos negativos` : 'Sin saldo negativo'} · Sin autovotos`,
+            `Individual balances · ${g.debtLimit ? `Up to ${g.debtLimit} negative points` : 'No negative balance'} · No self-voting`,
           )}
         </Txt>
         <Txt style={s.muted}>
           {t(
-            'Mayoría de los demás miembros. Cada solicitud conserva sus votantes; quienes se unan después votarán en las nuevas solicitudes. Los ajustes necesitan la aceptación del autor y nuevos votos.',
-            'Majority of the other members. Each proposal keeps its voters; people joining later vote on new proposals. Adjustments need the author’s acceptance and new votes.',
+            g.members.length === 2
+              ? 'Tu pareja acepta o rechaza. Si propone otros puntos y tú los aceptas, queda resuelto al momento.'
+              : 'Mayoría de los demás miembros. Cada solicitud conserva sus votantes; quienes se unan después votarán en las nuevas solicitudes. Los ajustes necesitan la aceptación del autor y nuevos votos.',
+            g.members.length === 2
+              ? 'Your partner accepts or rejects. If they suggest different points and you accept, it is settled right away.'
+              : 'Majority of the other members. Each proposal keeps its voters; people joining later vote on new proposals. Adjustments need the author’s acceptance and new votes.',
           )}
+        </Txt>
+        <Txt style={s.muted}>
+          {t('El saldo negativo empieza desactivado. Si os viene bien, acordad juntos un límite de hasta 100 puntos.', 'Negative balances start off. If you want them, agree on a limit of up to 100 points together.')}
         </Txt>
         <Button
           label={t('Cambiar límite de saldo', 'Change balance limit')}
           variant="secondary"
+          disabled={g.members.length < 2}
           onPress={() => {
-            setDebtValue(String(g.debtLimit ?? 100));
+            setDebtValue(String(g.debtLimit ?? 0));
             setDebtForm(!debtForm);
           }}
         />
@@ -132,7 +140,7 @@ export default function Settings() {
             />
             <Button
               label={t('Pedir acuerdo al grupo', 'Ask the group to agree')}
-              disabled={app.busy || !/^\d{1,3}$/.test(debtValue) || Number(debtValue) > 100 || Number(debtValue) === (g.debtLimit ?? 100)}
+              disabled={app.busy || !/^\d{1,3}$/.test(debtValue) || Number(debtValue) > 100 || Number(debtValue) === (g.debtLimit ?? 0)}
               onPress={async () => {
                 const amount = Number(debtValue);
                 if (await app.execute({
@@ -277,7 +285,7 @@ export default function Settings() {
         onPress={() => run(app.exit)}
       />
       <Txt style={{ textAlign: 'center', fontSize: 12, color: colors.muted }}>
-        Family Points · 0.1.5
+        Family Points · 0.1.6
       </Txt>
     </Page>
   );

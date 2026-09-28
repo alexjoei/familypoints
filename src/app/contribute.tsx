@@ -5,6 +5,7 @@ import * as Crypto from 'expo-crypto';
 import { Button, Card, Chip, Field, Page, Txt, useUi } from '../components/ui';
 import { useApp } from '../state/AppProvider';
 import { chooseContributionPhoto, uploadContributionPhoto } from '../lib/contribution-photo';
+import { DatePicker } from '../components/DatePicker';
 export default function Contribute() {
   const { s } = useUi();
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -102,13 +103,7 @@ export default function Contribute() {
           onChangeText={setPoints}
           keyboardType="number-pad"
         />
-        <Field
-          label={t('Fecha (AAAA-MM-DD)', 'Date (YYYY-MM-DD)')}
-          value={date}
-          onChangeText={setDate}
-          editable={!existing}
-          maxLength={10}
-        />
+        <DatePicker value={date} onChange={setDate} disabled={!!existing} />
         <Field
           label={t('Nota opcional', 'Optional note')}
           value={note}
@@ -184,8 +179,12 @@ export default function Contribute() {
       />
       <Txt style={s.muted}>
         {t(
-          'Los puntos se suman cuando la mayoría de los demás miembros aprueba.',
-          'Points are added when a majority of the other members approves.',
+          g.members.length === 2
+            ? 'Los puntos se suman cuando tu pareja los acepta.'
+            : 'Los puntos se suman cuando la mayoría de los demás miembros aprueba.',
+          g.members.length === 2
+            ? 'Your points are added when your partner accepts them.'
+            : 'Points are added when a majority of the other members approves.',
         )}
       </Txt>
     </Page>

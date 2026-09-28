@@ -15,13 +15,17 @@ export default function Pending() {
     <Page
       title={t('Aceptar puntos', 'Accept points')}
       subtitle={t(
-        'Revisa puntos, canjes y acuerdos del grupo. Acepta, rechaza o propón otra cantidad cuando toque.',
-        'Review points, redemptions and group agreements. Accept, reject or suggest another amount when it fits.',
+        group?.members.length === 2
+          ? 'Aquí decidís entre los dos: acepta, rechaza o propón otros puntos.'
+          : 'Revisa puntos, canjes y acuerdos del grupo. Acepta, rechaza o propón otra cantidad cuando toque.',
+        group?.members.length === 2
+          ? 'Decide together: accept, reject or suggest a different number of points.'
+          : 'Review points, redemptions and group agreements. Accept, reject or suggest another amount when it fits.',
       )}
     >
       <View style={s.wrap}>
         <Chip
-          label={t('Todo el grupo', 'Whole group')}
+          label={group?.members.length === 2 ? t('Los dos', 'Both of us') : t('Todo el grupo', 'Whole group')}
           selected={!mine}
           onPress={() => setMine(false)}
         />

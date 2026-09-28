@@ -17,6 +17,11 @@ test('a contribution can include a photo visible to the group', async ({ page })
   await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
   await page.getByRole('button', { name: 'Sumar puntos', exact: true }).first().click();
   await page.getByRole('textbox', { name: '¿Qué has hecho?' }).fill('Montar la mesa');
+  await page.getByRole('button', { name: /Cambiar fecha/ }).click();
+  const now = new Date();
+  const chosenDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getDate() === 15 ? '14' : '15'}`;
+  await page.getByRole('button', { name: chosenDate }).click();
+  await expect(page.getByRole('button', { name: /Cambiar fecha/ })).not.toContainText('Hoy');
   const chooser = page.waitForEvent('filechooser');
   await page.getByRole('button', { name: 'Añadir foto (opcional)' }).click();
   await (await chooser).setFiles('assets/icon.png');
@@ -34,15 +39,15 @@ test('group shows member balances and votes on the negative balance limit', asyn
   await expect(members.getByText('40 pt')).toBeVisible();
   await expect(members.getByText('20 pt')).toBeVisible();
   await page.getByRole('button', { name: 'Cambiar límite de saldo' }).click();
-  await page.getByRole('textbox', { name: 'Puntos negativos permitidos' }).fill('0');
+  await page.getByRole('textbox', { name: 'Puntos negativos permitidos' }).fill('100');
   await page.getByRole('button', { name: 'Pedir acuerdo al grupo' }).click();
   await page.getByRole('tab', { name: 'Inicio' }).click();
   await page.getByRole('button', { name: 'Sam', exact: true }).click();
   await page.getByRole('tab', { name: 'Pendientes' }).click();
-  await expect(page.getByText('Alex propone un límite de 0 puntos negativos')).toBeVisible();
+  await expect(page.getByText('Alex propone un límite de 100 puntos negativos')).toBeVisible();
   await page.getByRole('button', { name: 'Aceptar', exact: true }).last().click();
   await page.getByRole('tab', { name: 'Grupo' }).click();
-  await expect(page.getByText('Hasta 0 puntos negativos')).toBeVisible();
+  await expect(page.getByText('Hasta 100 puntos negativos')).toBeVisible();
 });
 test('mobile demo: create, reach majority, redeem, persist and change language', async ({
   page,
@@ -141,12 +146,12 @@ test('adjustment requires author acceptance and history shows the previous revis
   await page.getByRole('button', { name: 'Proponer puntos' }).click();
   await page.getByRole('textbox', { name: 'Puntos propuestos' }).fill('10');
   await page.getByRole('button', { name: 'Enviar ajuste' }).click();
-  await expect(page.getByText('Esperando la respuesta del autor.')).toBeVisible();
+  await expect(page.getByText('Esperando la respuesta de Sam.')).toBeVisible();
   await page.getByRole('tab', { name: 'Inicio' }).click();
   await page.getByRole('button', { name: 'Sam', exact: true }).click();
   await page.getByRole('tab', { name: 'Pendientes' }).click();
-  await page.getByRole('button', { name: 'Aceptar ajuste y volver a votar' }).click();
-  await expect(page.getByText('0 de 1 aprobaciones · revisión 2')).toBeVisible();
+  await page.getByRole('button', { name: 'Aceptar los nuevos puntos' }).click();
+  await expect(page.getByText('He salvado las plantas', { exact: true }).filter({ visible: true })).toHaveCount(0);
   await page.getByRole('tab', { name: 'Historial' }).click();
   await page.getByRole('button', { name: 'Ver detalle' }).first().click();
   await expect(page.getByText('REVISIÓN 1', { exact: true })).toBeVisible();

@@ -174,8 +174,21 @@ describe('PostgreSQL RPC and permission integration', () => {
     expect(balance(g, people[0]).available).toBe(20);
     expect(g.proposals[0].votes).toHaveLength(3);
   });
+  it('closes a two-person adjustment when its author accepts the partner’s points', async () => {
+    const id = await makeGroup(2);
+    await act(id, 0, contribution());
+    await act(id, 1, { type: 'adjust', id: 'c', revision: 1, points: 10 });
+    const g = await act(id, 0, { type: 'accept_adjustment', id: 'c', revision: 1 });
+    expect(g.proposals[0]).toMatchObject({ points: 10, status: 'approved', revision: 2 });
+    expect(g.proposals[0].votes.at(-1)).toMatchObject({ actor: people[1], choice: 'approve', revision: 2 });
+    expect(balance(g, people[0]).earned).toBe(10);
+    await expect(act(id, 1, vote('c', 'approve', 2))).rejects.toThrow('already_closed');
+  });
   it('uses approved reward costs, reserves funds and prevents double spending', async () => {
     const id = await makeGroup();
+    await act(id, 0, { type: 'submit', id: 'limit', kind: 'debt_limit', title: 'Allow 100', points: 100, category: '', note: '', date: '2026-09-26' });
+    await act(id, 1, vote('limit'));
+    await act(id, 2, vote('limit'));
     await act(id, 0, contribution());
     await act(id, 1, vote('c'));
     await act(id, 2, vote('c'));
@@ -196,15 +209,15 @@ describe('PostgreSQL RPC and permission integration', () => {
   it('changes the negative balance limit only after majority approval', async () => {
     const id = await makeGroup();
     let g = await act(id, 0, {
-      type: 'submit', id: 'limit', kind: 'debt_limit', title: 'Limit 0',
-      points: 0, category: '', note: '', date: '2026-09-26',
+      type: 'submit', id: 'limit', kind: 'debt_limit', title: 'Allow 100',
+      points: 100, category: '', note: '', date: '2026-09-26',
     });
-    expect(g.debtLimit).toBe(100);
+    expect(g.debtLimit).toBe(0);
     await expect(act(id, 0, vote('limit'))).rejects.toThrow('self_vote');
     g = await act(id, 1, vote('limit'));
-    expect(g.debtLimit).toBe(100);
-    g = await act(id, 2, vote('limit'));
     expect(g.debtLimit).toBe(0);
+    g = await act(id, 2, vote('limit'));
+    expect(g.debtLimit).toBe(100);
     expect(g.activity.some((e) => e.type === 'approved' && e.proposalId === 'limit')).toBe(true);
     await expect(act(id, 0, { type: 'submit', id: 'bad', kind: 'debt_limit', title: 'Bad', points: 101, category: '', note: '', date: '2026-09-26' })).rejects.toThrow('invalid_points');
   });

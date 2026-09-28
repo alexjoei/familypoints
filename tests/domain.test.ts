@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { applyCommand, balance, Group, quorum, rewardCost } from '../src/domain/model';
+import { activityClusters, applyCommand, balance, Group, quorum, rewardCost } from '../src/domain/model';
 import { createDemo } from '../src/domain/demo';
 const command = {
   type: 'submit' as const,
@@ -70,6 +70,16 @@ describe('group agreements', () => {
     expect(g.proposals.find((p) => p.id === 'new')?.votes).toHaveLength(3);
     expect(balance(g, 'alex').available).toBe(50);
   });
+  it('settles a partner’s suggested points as soon as the author accepts', () => {
+    let g = applyCommand(createDemo('es'), 'alex', command);
+    g = applyCommand(g, 'sam', { type: 'adjust', id: 'new', revision: 1, points: 10 });
+    g = applyCommand(g, 'alex', { type: 'accept_adjustment', id: 'new', revision: 1 });
+    const proposal = g.proposals.find((p) => p.id === 'new')!;
+    expect(proposal).toMatchObject({ points: 10, status: 'approved', revision: 2 });
+    expect(proposal.votes.at(-1)).toMatchObject({ actor: 'sam', choice: 'approve', revision: 2 });
+    expect(balance(g, 'alex').earned).toBe(50);
+    expect(() => vote(g, 'sam', 'new', 'approve', 2)).toThrow('already_closed');
+  });
   it('can reject and resubmit without crediting the rejected revision', () => {
     let g = applyCommand(createDemo('es', 'group'), 'alex', command);
     g = vote(vote(g, 'sam', 'new', 'reject'), 'dani', 'new', 'reject');
@@ -87,6 +97,12 @@ describe('group agreements', () => {
   it('reserves funds immediately, prevents overspending, and releases on withdrawal', () => {
     let g = createDemo('es', 'group');
     const cmd = { ...command, kind: 'redemption' as const, rewardId: 'demo-r1', points: 1 };
+    expect(() => applyCommand(g, 'alex', { ...cmd, id: 'too-early', rewardId: 'demo-r2' })).toThrow('insufficient_balance');
+    g = applyCommand(g, 'alex', {
+      type: 'submit', id: 'limit', kind: 'debt_limit', title: 'Allow negative balance',
+      points: 100, category: '', note: '', date: '2026-09-26',
+    });
+    g = vote(vote(g, 'sam', 'limit'), 'dani', 'limit');
     g = applyCommand(g, 'alex', cmd);
     expect(balance(g, 'alex')).toMatchObject({ available: 10, reserved: 30, spent: 0 });
     for (const id of ['other', 'third', 'fourth']) g = applyCommand(g, 'alex', { ...cmd, id });
@@ -95,18 +111,18 @@ describe('group agreements', () => {
     g = applyCommand(g, 'alex', { type: 'withdraw', id: 'new', revision: 1 });
     expect(balance(g, 'alex').available).toBe(-50);
   });
-  it('applies a group-approved limit of zero to future redemptions', () => {
+  it('enables negative balances only after group approval', () => {
     let g = createDemo('es', 'group');
     g = applyCommand(g, 'alex', {
-      type: 'submit', id: 'limit', kind: 'debt_limit', title: 'No negative points',
-      points: 0, category: '', note: '', date: '2026-09-26',
+      type: 'submit', id: 'limit', kind: 'debt_limit', title: 'Allow negative points',
+      points: 100, category: '', note: '', date: '2026-09-26',
     });
-    expect(g.debtLimit).toBe(100);
-    g = vote(vote(g, 'sam', 'limit'), 'dani', 'limit');
     expect(g.debtLimit).toBe(0);
+    g = vote(vote(g, 'sam', 'limit'), 'dani', 'limit');
+    expect(g.debtLimit).toBe(100);
     g = applyCommand(g, 'alex', { ...command, id: 'redeem', kind: 'redemption', rewardId: 'demo-r1' });
     expect(balance(g, 'alex').available).toBe(10);
-    expect(() => applyCommand(g, 'alex', { ...command, id: 'too-much', kind: 'redemption', rewardId: 'demo-r1' })).toThrow('insufficient_balance');
+    expect(balance(g, 'alex').available).toBe(10);
   });
   it('spends a reserved redemption only once', () => {
     let g = applyCommand(createDemo('es', 'group'), 'alex', {
@@ -159,5 +175,12 @@ describe('group agreements', () => {
       before = JSON.stringify(g);
     applyCommand(g, 'alex', command);
     expect(JSON.stringify(g)).toBe(before);
+  });
+  it('groups the steps of one contribution into one movement', () => {
+    let g = applyCommand(createDemo('es'), 'alex', command);
+    g = vote(g, 'sam');
+    const cluster = activityClusters(g).find((item) => item.id === 'new')!;
+    expect(cluster.events.map((event) => event.type)).toEqual(['submitted', 'voted_approve', 'approved']);
+    expect(activityClusters(g).filter((item) => item.id === 'new')).toHaveLength(1);
   });
 });

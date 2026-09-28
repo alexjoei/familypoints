@@ -40,7 +40,9 @@ export default function Rewards() {
           </Txt>
         )}
         <Txt style={s.muted}>
-          {t(`Puedes llegar hasta -${g.debtLimit ?? 100} pt.`, `You can go down to -${g.debtLimit ?? 100} pt.`)}
+          {(g.debtLimit ?? 0) > 0
+            ? t(`Podéis llegar hasta -${g.debtLimit} pt.`, `You can go down to -${g.debtLimit} pt.`)
+            : t('Por ahora, solo puedes canjear los puntos que tienes.', 'For now, you can only redeem points you have.')}
         </Txt>
       </Card>
       <Button
@@ -160,14 +162,14 @@ export default function Rewards() {
             </Txt>
             <Button
               label={
-                b.available - cost >= -(g.debtLimit ?? 100)
+                b.available - cost >= -(g.debtLimit ?? 0)
                   ? t('Canjear puntos', 'Redeem points')
                   : t(
-                      `Te faltan ${cost - b.available - (g.debtLimit ?? 100)} puntos`,
-                      `${cost - b.available - (g.debtLimit ?? 100)} more points to go`,
+                      `Te faltan ${cost - b.available - (g.debtLimit ?? 0)} puntos`,
+                      `${cost - b.available - (g.debtLimit ?? 0)} more points to go`,
                     )
               }
-              disabled={b.available - cost < -(g.debtLimit ?? 100) || busy}
+              disabled={b.available - cost < -(g.debtLimit ?? 0) || busy}
               onPress={() => {
                 setConfirm(r);
                 setRedemptionId(Crypto.randomUUID());

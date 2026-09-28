@@ -345,6 +345,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     try {
       value = raw ? JSON.parse(raw) : createDemo(language);
       if (value.id !== 'demo' || !Array.isArray(value.proposals)) throw new Error();
+      if (!value.proposals.some((p) => p.kind === 'debt_limit' && p.status === 'approved'))
+        value.debtLimit = 0;
     } catch {
       value = createDemo(language);
     }

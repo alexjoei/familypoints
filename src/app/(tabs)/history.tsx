@@ -2,22 +2,19 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { useApp } from '../../state/AppProvider';
 import { Card, Chip, Empty, Page, useUi } from '../../components/ui';
-import { ActivityRow } from '../../features/activity';
+import { ActivityClusterRow } from '../../features/activity';
 import { ProposalCard } from '../../features/ProposalCard';
+import { activityClusters } from '../../domain/model';
 export default function History() {
   const { s } = useUi();
   const { group: g, t } = useApp();
   const [filter, setFilter] = useState('all'),
     [member, setMember] = useState('all');
   if (!g) return null;
-  const events = g.activity
-    .filter(
-      (e) =>
-        (member === 'all' || e.actor === member) &&
-        (filter === 'all' || g.proposals.some((p) => p.id === e.proposalId && p.kind === filter)),
-    )
-    .slice()
-    .reverse();
+  const clusters = activityClusters(g).filter((cluster) =>
+    (member === 'all' || (cluster.proposal?.author ?? cluster.latest.actor) === member) &&
+    (filter === 'all' || cluster.proposal?.kind === filter),
+  );
   const rejected = g.proposals.filter(
     (p) => p.status === 'rejected' && (member === 'all' || p.author === member),
   );
@@ -67,10 +64,10 @@ export default function History() {
             )}
           />
         )
-      ) : events.length ? (
+      ) : clusters.length ? (
         <Card>
-          {events.map((e) => (
-            <ActivityRow key={e.id} item={e} />
+          {clusters.map((cluster) => (
+            <ActivityClusterRow key={cluster.id} cluster={cluster} />
           ))}
         </Card>
       ) : (

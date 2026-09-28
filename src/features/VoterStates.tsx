@@ -7,7 +7,7 @@ export function VoterStates({ proposal }: { proposal: Proposal }) {
   const { colors, s } = useUi();
   return (
     <View style={{ gap: 8 }}>
-      <Txt style={s.label}>{t('¿Cómo va la cosa?', 'Where do we stand?')}</Txt>
+      <Txt style={s.label}>{group?.members.length === 2 ? t('Respuesta de tu pareja', "Your partner's reply") : t('¿Cómo va la cosa?', 'Where do we stand?')}</Txt>
       <View style={s.wrap}>
         {proposal.electorate.map((id) => {
           const status = voterStatus(proposal, id),

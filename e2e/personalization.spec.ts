@@ -61,7 +61,7 @@ test('pending cards show each voter, distinguish viewing from voting and show bo
   await expect(page.getByLabel('Dani: Pendiente', { exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Ver detalle' }).click();
   await expect(page.getByLabel('Alex: Visto, sin votar', { exact: true })).toBeVisible();
-  await expect(page.getByText('0 de 1 aprobaciones · revisión 1')).toBeVisible();
+  await expect(page.getByText('Respuesta de tu pareja')).toBeVisible();
   await page.getByRole('button', { name: 'Volver', exact: true }).click();
   await expect(page.getByLabel('Alex: Visto, sin votar', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Rechazar', exact: true }).click();

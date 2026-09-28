@@ -1,9 +1,9 @@
 import { router } from 'expo-router';
 import { View } from 'react-native';
 import { Button, Card, Chip, Empty, Icon, Page, Txt, useUi } from '../../components/ui';
-import { balance } from '../../domain/model';
+import { activityClusters, balance } from '../../domain/model';
 import { useApp } from '../../state/AppProvider';
-import { ActivityRow } from '../../features/activity';
+import { ActivityClusterRow } from '../../features/activity';
 export default function Home() {
   const { colors, s } = useUi();
   const app = useApp(),
@@ -86,6 +86,16 @@ export default function Home() {
           />
         </Card>
       )}
+      {g.members.length === 2 && !g.debtLimit && !g.proposals.some((p) => p.kind === 'debt_limit') && (
+        <Card style={{ backgroundColor: colors.mint }}>
+          <Txt style={s.subtitle}>{t('Un acuerdo para empezar', 'One agreement to start')}</Txt>
+          <Txt>{t(
+            'De momento nadie puede canjear más puntos de los que tiene. Si queréis permitirlo, decidid juntos un límite de hasta 100.',
+            'For now, neither of you can redeem more points than you have. If you want to allow it, agree on a limit up to 100 together.',
+          )}</Txt>
+          <Button label={t('Decidir límite juntos', 'Agree on a limit')} variant="secondary" onPress={() => router.push('/(tabs)/settings')} />
+        </Card>
+      )}
       {pending.length > 0 && (
         <Card style={{ backgroundColor: colors.peach, borderColor: colors.peach }}>
           <View style={s.row}>
@@ -98,8 +108,8 @@ export default function Home() {
                       ? '1 solicitud necesita tu respuesta'
                       : `${needsMe} solicitudes necesitan tu respuesta`
                     : pending.length === 1
-                      ? '1 solicitud esperando al grupo'
-                      : `${pending.length} solicitudes esperando al grupo`,
+                      ? g.members.length === 2 ? '1 solicitud esperando a tu pareja' : '1 solicitud esperando al grupo'
+                      : `${pending.length} solicitudes esperando ${g.members.length === 2 ? 'a tu pareja' : 'al grupo'}`,
                   needsMe
                     ? `${needsMe} requests need your response`
                     : `${pending.length} requests waiting for the group`,
@@ -107,8 +117,12 @@ export default function Home() {
               </Txt>
               <Txt style={s.muted}>
                 {t(
-                  'Revisa quién quiere sumar o canjear puntos. Tus solicitudes esperan al resto del grupo.',
-                  'Review who wants to add or redeem points. Your requests await the other members.',
+                  g.members.length === 2
+                    ? 'Revisa lo que quiere sumar o canjear tu pareja. Tus puntos esperan su respuesta.'
+                    : 'Revisa quién quiere sumar o canjear puntos. Tus solicitudes esperan al resto del grupo.',
+                  g.members.length === 2
+                    ? 'Review what your partner wants to add or redeem. Your points await their reply.'
+                    : 'Review who wants to add or redeem points. Your requests await the other members.',
                 )}
               </Txt>
             </View>
@@ -130,8 +144,12 @@ export default function Home() {
         </Txt>
         <Txt>
           {t(
-            '2. Aceptar puntos: tu pareja o la mayoría del resto del grupo revisa y acepta. Entonces se suman.',
-            '2. Accept points: your partner or a majority of the other members reviews and accepts. Then the points are added.',
+            g.members.length === 2
+              ? '2. Aceptar puntos: tu pareja revisa y acepta. Listo, ya son tuyos.'
+              : '2. Aceptar puntos: la mayoría del resto del grupo revisa y acepta. Entonces se suman.',
+            g.members.length === 2
+              ? '2. Accept points: your partner reviews and accepts. Done, they are yours.'
+              : '2. Accept points: a majority of the other members reviews and accepts. Then the points are added.',
           )}
         </Txt>
         <Txt>
@@ -209,11 +227,10 @@ export default function Home() {
         </View>
         {g.activity.length ? (
           <Card>
-            {g.activity
-              .slice(-4)
-              .reverse()
-              .map((e) => (
-                <ActivityRow item={e} key={e.id} />
+            {activityClusters(g)
+              .slice(0, 4)
+              .map((cluster) => (
+                <ActivityClusterRow cluster={cluster} key={cluster.id} />
               ))}
           </Card>
         ) : (
