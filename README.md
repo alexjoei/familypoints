@@ -10,7 +10,7 @@ También están implementados el cliente de correo/contraseña y Google, las pan
 
 ## Probar ahora
 
-**Android instalable:** [APK de prueba 0.1.1](https://expo.dev/artifacts/eas/vxMX6cq4MUQdkj1eanlpGhoRGIIrY5FLRFn6kaE3vqQ.apk). [Instrucciones y estado de verificación](docs/apk-prueba.md).
+**Android instalable:** [APK de prueba 0.1.2](https://expo.dev/artifacts/eas/gQB6TfohJGUTldRl2NwnsDze3BqnOCNyuLqIobItmho.apk). [Instrucciones y estado de verificación](docs/apk-prueba.md).
 
 Requisitos: Node.js 24 LTS (Expo requiere al menos 22.13) y npm.
 
