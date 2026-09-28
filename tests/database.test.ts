@@ -249,11 +249,16 @@ describe('PostgreSQL RPC and permission integration', () => {
     const id = await makeGroup();
     await as(0);
     const { rows } = await db.query<{ i: { code: string } }>('select fp_invite($1) i', [id]);
-    await db.query('select fp_invite($1,true)', [id]);
+    expect(rows[0].i.code).toMatch(/^[a-f0-9]{12}$/);
+    const renewed = await db.query<{ i: { code: string } }>('select fp_invite($1,true) i', [id]);
     await as(3);
     await expect(db.query("select fp_join_group($1,'Other')", [rows[0].i.code])).rejects.toThrow(
       'invalid_invite',
     );
+    const shortCode = renewed.rows[0].i.code.toUpperCase();
+    const readableCode = `${shortCode.slice(0, 4)}-${shortCode.slice(4, 8)} ${shortCode.slice(8)}`;
+    const joined = await db.query<{ group_id: string }>("select fp_join_group($1,'Other') group_id", [readableCode]);
+    expect(joined.rows[0].group_id).toBe(id);
     await expect(act(id, 1, { type: 'category', title: 'Travel' })).rejects.toThrow('owner_only');
   });
   it('rejects invalid dates, decimal points and blank titles', async () => {

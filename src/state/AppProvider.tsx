@@ -380,7 +380,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   async function joinGroup(code: string, display: string) {
     if (!supabase) throw new Error('not_configured');
     const { data, error } = await supabase.rpc('fp_join_group', {
-      p_code: code.trim(),
+      p_code: code.replace(/[\s-]/g, '').toLowerCase(),
       p_display_name: display.trim(),
     });
     if (error) throw error;

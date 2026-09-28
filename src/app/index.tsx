@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../state/AppProvider';
@@ -16,15 +15,14 @@ export default function Welcome() {
     [busy, setBusy] = useState(false),
     [notice, setNotice] = useState('');
   const [name, setName] = useState(''),
-    [display, setDisplay] = useState(''),
-    [code, setCode] = useState(params.code ?? '');
-  useEffect(() => {
-    AsyncStorage.getItem('fp.pendingInvite')
-      .then((saved) => {
-        if (saved) setCode(saved);
-      })
-      .catch(app.report);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    [displayInput, setDisplayInput] = useState<string | null>(null);
+  const defaultName = String(
+    app.session?.user.user_metadata?.full_name ||
+      app.session?.user.user_metadata?.name ||
+      app.session?.user.email?.split('@')[0] ||
+      '',
+  ).slice(0, 60);
+  const display = displayInput ?? defaultName;
   const run = async (fn: () => Promise<unknown>) => {
     if (busy) return;
     setBusy(true);
@@ -58,14 +56,23 @@ export default function Welcome() {
             disabled={busy}
           />
         ))}
-        <Field
-          label={t('Tu nombre en el grupo', 'Your name in the group')}
-          value={display}
-          onChangeText={setDisplay}
-          maxLength={60}
-        />
+        <Card>
+          <Txt style={s.subtitle}>{t('Ya me están esperando', 'They are waiting for me')}</Txt>
+          <Txt>{t('¿Te han enviado un código? Entra y pégalo.', 'Got a code? Open this and paste it.')}</Txt>
+          <Button
+            label={t('Unirme con código', 'Join with code')}
+            onPress={() => router.push({ pathname: '/join', params: { code: params.code ?? '' } })}
+            disabled={busy}
+          />
+        </Card>
         <Card>
           <Txt style={s.subtitle}>{t('Empezar un grupo', 'Start a group')}</Txt>
+          <Field
+            label={t('Tu nombre en el grupo', 'Your name in the group')}
+            value={display}
+            onChangeText={setDisplayInput}
+            maxLength={60}
+          />
           <Field
             label={t('Nombre del grupo', 'Group name')}
             value={name}
@@ -82,20 +89,6 @@ export default function Welcome() {
               })
             }
             disabled={!name.trim() || !display.trim() || busy}
-          />
-        </Card>
-        <Card>
-          <Txt style={s.subtitle}>{t('Ya me están esperando', 'They are waiting for me')}</Txt>
-          <Field
-            label={t('Código de invitación', 'Invitation code')}
-            value={code}
-            onChangeText={setCode}
-            autoCapitalize="none"
-          />
-          <Button
-            label={t('Unirme al grupo', 'Join group')}
-            onPress={() => run(() => app.joinGroup(code, display))}
-            disabled={!code.trim() || !display.trim() || busy}
           />
         </Card>
         <Button

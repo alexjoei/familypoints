@@ -55,6 +55,7 @@ export default function ShareGroup() {
       </Page>
     );
   }
+  const readableCode = invitation?.code.toUpperCase().match(/.{1,4}/g)?.join('-') ?? '';
   return (
     <Page
       title={app.t('Compartir grupo', 'Share group')}
@@ -80,7 +81,7 @@ export default function ShareGroup() {
               accessibilityLabel={app.t('Código del grupo', 'Group code')}
               style={{ fontSize: 26, lineHeight: 36, fontWeight: '800', letterSpacing: 2, textAlign: 'center' }}
             >
-              {invitation.code}
+              {readableCode}
             </Txt>
             <Txt style={s.muted}>
               {app.t('Válido hasta ', 'Valid until ')}
@@ -124,8 +125,8 @@ export default function ShareGroup() {
               });
               Share.share({
                 message: app.t(
-                  `Únete a ${group.name} en Family Points. Código: ${invitation.code}\n${link}`,
-                  `Join ${group.name} on Family Points. Code: ${invitation.code}\n${link}`,
+                  `Únete a ${group.name} en Family Points. Código: ${readableCode}\n${link}`,
+                  `Join ${group.name} on Family Points. Code: ${readableCode}\n${link}`,
                 ),
               }).catch(app.report);
             }}

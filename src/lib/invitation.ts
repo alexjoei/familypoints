@@ -10,7 +10,7 @@ export async function getInvitation(groupId: string, rotate = false): Promise<In
   });
   if (error) throw error;
   const invitation = data as Invitation;
-  if (!rotate && new Date(invitation.expires).getTime() <= Date.now())
+  if (!rotate && (invitation.code.length > 12 || new Date(invitation.expires).getTime() <= Date.now()))
     return getInvitation(groupId, true);
   return invitation;
 }

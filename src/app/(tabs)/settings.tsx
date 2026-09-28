@@ -225,7 +225,7 @@ export default function Settings() {
         onPress={() => run(app.exit)}
       />
       <Txt style={{ textAlign: 'center', fontSize: 12, color: colors.muted }}>
-        Family Points · 0.1.3
+        Family Points · 0.1.4
       </Txt>
     </Page>
   );

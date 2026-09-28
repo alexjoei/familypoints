@@ -1,4 +1,16 @@
 import { test, expect } from '@playwright/test';
+
+test('joining with a pasted group code enables the next step', async ({ page }) => {
+  await page.goto('/join');
+  const join = page.getByRole('button', { name: 'Entrar para unirme' });
+  await expect(join).toBeDisabled();
+  await page.getByRole('textbox', { name: 'Pega o escribe el código' }).fill('AB12-CD34-EF56');
+  await expect(join).toBeEnabled();
+  await join.click();
+  await expect(page.getByText('Suma puntos.')).toBeVisible();
+  await page.goto('/join');
+  await expect(page.getByRole('textbox', { name: 'Pega o escribe el código' })).toHaveValue('ab12cd34ef56');
+});
 test('mobile demo: create, reach majority, redeem, persist and change language', async ({
   page,
 }) => {
