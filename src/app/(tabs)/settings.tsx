@@ -4,7 +4,7 @@ import * as Crypto from 'expo-crypto';
 import { router } from 'expo-router';
 import { Button, Card, Chip, Field, Page, Txt, useUi } from '../../components/ui';
 import { useApp } from '../../state/AppProvider';
-import { Template } from '../../domain/model';
+import { balance, Template } from '../../domain/model';
 import { ThemePicker } from '../../components/ThemePicker';
 export default function Settings() {
   const { colors, s } = useUi();
@@ -12,6 +12,8 @@ export default function Settings() {
     { group: g, t } = app;
   const [category, setCategory] = useState(''),
     [edit, setEdit] = useState<Template | null>(null),
+    [debtForm, setDebtForm] = useState(false),
+    [debtValue, setDebtValue] = useState('100'),
     [working, setWorking] = useState(false);
   if (!g) return null;
   const run = async (fn: () => Promise<unknown>) => {
@@ -72,12 +74,22 @@ export default function Settings() {
         <Txt style={s.subtitle}>{t('Miembros', 'Members')}</Txt>
         {g.members.map((m) => (
           <View style={s.between} key={m.id}>
-            <Txt>{m.name}</Txt>
-            <Txt style={s.muted}>
-              {m.id === g.owner
-                ? t('Administra el grupo', 'Group administrator')
-                : t('Miembro', 'Member')}
-            </Txt>
+            <View style={{ flex: 1 }}>
+              <Txt style={{ fontWeight: '700' }}>{m.name}</Txt>
+              <Txt style={s.muted}>
+                {m.id === g.owner
+                  ? t('Administra el grupo', 'Group administrator')
+                  : t('Miembro', 'Member')}
+              </Txt>
+            </View>
+            <View style={{ alignItems: 'flex-end' }}>
+              <Txt style={{ fontWeight: '800', fontSize: 20 }}>{balance(g, m.id).total} pt</Txt>
+              {balance(g, m.id).reserved > 0 && (
+                <Txt style={s.muted}>
+                  {balance(g, m.id).available} {t('disponibles', 'available')}
+                </Txt>
+              )}
+            </View>
           </View>
         ))}
       </Card>
@@ -85,8 +97,8 @@ export default function Settings() {
         <Txt style={s.subtitle}>{t('Nuestros acuerdos', 'Our agreements')}</Txt>
         <Txt>
           {t(
-            'Saldo individual · Sin deudas · Sin autovotos',
-            'Individual balances · No debt · No self-voting',
+            `Saldo individual · Hasta ${g.debtLimit ?? 100} puntos negativos · Sin autovotos`,
+            `Individual balances · Up to ${g.debtLimit ?? 100} negative points · No self-voting`,
           )}
         </Txt>
         <Txt style={s.muted}>
@@ -95,6 +107,46 @@ export default function Settings() {
             'Majority of the other members. Each proposal keeps its voters; people joining later vote on new proposals. Adjustments need the author’s acceptance and new votes.',
           )}
         </Txt>
+        <Button
+          label={t('Cambiar límite de saldo', 'Change balance limit')}
+          variant="secondary"
+          onPress={() => {
+            setDebtValue(String(g.debtLimit ?? 100));
+            setDebtForm(!debtForm);
+          }}
+        />
+        {debtForm && (
+          <View style={{ gap: 10 }}>
+            <Txt style={s.muted}>
+              {t(
+                'Propón un límite entre 0 y 100. El resto lo acepta o rechaza antes de aplicarlo.',
+                'Suggest a limit from 0 to 100. The others accept or reject it before it applies.',
+              )}
+            </Txt>
+            <Field
+              label={t('Puntos negativos permitidos', 'Negative points allowed')}
+              value={debtValue}
+              onChangeText={setDebtValue}
+              keyboardType="number-pad"
+              maxLength={3}
+            />
+            <Button
+              label={t('Pedir acuerdo al grupo', 'Ask the group to agree')}
+              disabled={app.busy || !/^\d{1,3}$/.test(debtValue) || Number(debtValue) > 100 || Number(debtValue) === (g.debtLimit ?? 100)}
+              onPress={async () => {
+                const amount = Number(debtValue);
+                if (await app.execute({
+                  type: 'submit', id: Crypto.randomUUID(), kind: 'debt_limit',
+                  title: t(`Límite de saldo negativo: ${amount} puntos`, `Negative balance limit: ${amount} points`),
+                  points: amount, category: '', note: '', date: new Date().toISOString().slice(0, 10),
+                })) {
+                  setDebtForm(false);
+                  router.push('/(tabs)/pending');
+                }
+              }}
+            />
+          </View>
+        )}
       </Card>
       <Card>
         <Txt style={s.subtitle}>{t('A tu manera', 'Your way')}</Txt>
@@ -225,7 +277,7 @@ export default function Settings() {
         onPress={() => run(app.exit)}
       />
       <Txt style={{ textAlign: 'center', fontSize: 12, color: colors.muted }}>
-        Family Points · 0.1.4
+        Family Points · 0.1.5
       </Txt>
     </Page>
   );

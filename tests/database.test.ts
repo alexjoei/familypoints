@@ -38,7 +38,7 @@ const contribution = (id = 'c', points = 40) => ({
   id,
   kind: 'contribution',
   title: 'Cena',
-  category: 'Cocinar',
+  category: 'Cocina',
   points,
   date: '2026-09-26',
   note: '',
@@ -113,7 +113,7 @@ describe('read receipt permissions', () => {
 beforeAll(async () => {
   db = new PGlite();
   await db.exec(
-    "create role anon; create role authenticated; create schema auth; create table auth.users(id uuid primary key); create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$; grant usage on schema auth to authenticated;",
+    "create role anon; create role authenticated; create schema auth; create table auth.users(id uuid primary key); create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$; grant usage on schema auth to authenticated; create schema storage; create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]); create table storage.objects(bucket_id text,name text,owner_id text); alter table storage.objects enable row level security; grant usage on schema storage to authenticated; grant select,insert,update,delete on storage.objects to authenticated;",
   );
   for (const id of people) await db.query('insert into auth.users values ($1)', [id]);
   for (const file of (await readdir('supabase/migrations'))
@@ -130,7 +130,7 @@ describe('PostgreSQL RPC and permission integration', () => {
     await as(0);
     const { rows } = await db.query<{ g: Group }>('select fp_snapshot($1) g', [id]);
     expect(rows[0].g.members).toHaveLength(3);
-    expect(rows[0].g.templates).toHaveLength(7);
+    expect(rows[0].g.templates).toHaveLength(4);
     expect(rows[0].g).not.toHaveProperty('invite');
     await as(3);
     await expect(db.query('select fp_snapshot($1)', [id])).rejects.toThrow('not_member');
@@ -185,10 +185,45 @@ describe('PostgreSQL RPC and permission integration', () => {
     const redeem = { ...contribution('redeem', 1), kind: 'redemption', rewardId: 'r' };
     let g = await act(id, 0, redeem);
     expect(balance(g, people[0])).toMatchObject({ available: 10, reserved: 30, spent: 0 });
-    await expect(act(id, 0, { ...redeem, id: 'redeem2' })).rejects.toThrow('insufficient_balance');
+    await act(id, 0, { ...redeem, id: 'redeem2' });
+    await act(id, 0, { ...redeem, id: 'redeem3' });
+    await act(id, 0, { ...redeem, id: 'redeem4' });
+    await expect(act(id, 0, { ...redeem, id: 'redeem5' })).rejects.toThrow('insufficient_balance');
     await act(id, 1, vote('redeem'));
     g = await act(id, 2, vote('redeem'));
-    expect(balance(g, people[0])).toMatchObject({ available: 10, reserved: 0, spent: 30 });
+    expect(balance(g, people[0])).toMatchObject({ available: -80, reserved: 90, spent: 30 });
+  });
+  it('changes the negative balance limit only after majority approval', async () => {
+    const id = await makeGroup();
+    let g = await act(id, 0, {
+      type: 'submit', id: 'limit', kind: 'debt_limit', title: 'Limit 0',
+      points: 0, category: '', note: '', date: '2026-09-26',
+    });
+    expect(g.debtLimit).toBe(100);
+    await expect(act(id, 0, vote('limit'))).rejects.toThrow('self_vote');
+    g = await act(id, 1, vote('limit'));
+    expect(g.debtLimit).toBe(100);
+    g = await act(id, 2, vote('limit'));
+    expect(g.debtLimit).toBe(0);
+    expect(g.activity.some((e) => e.type === 'approved' && e.proposalId === 'limit')).toBe(true);
+    await expect(act(id, 0, { type: 'submit', id: 'bad', kind: 'debt_limit', title: 'Bad', points: 101, category: '', note: '', date: '2026-09-26' })).rejects.toThrow('invalid_points');
+  });
+  it('limits private contribution photos to group members and their own folders', async () => {
+    const id = await makeGroup();
+    const photoId = randomUUID();
+    const path = `${id}/${people[0]}/${photoId}.jpg`;
+    await as(0);
+    await db.exec('set role authenticated');
+    try {
+      await db.query("insert into storage.objects(bucket_id,name,owner_id) values('fp-contributions',$1,$2)", [path, people[0]]);
+      await expect(db.query("insert into storage.objects(bucket_id,name,owner_id) values('fp-contributions',$1,$2)", [`${id}/${people[1]}/${randomUUID()}.jpg`, people[0]])).rejects.toThrow();
+      expect((await db.query('select name from storage.objects where name=$1', [path])).rows).toHaveLength(1);
+      await as(3);
+      expect((await db.query('select name from storage.objects where name=$1', [path])).rows).toHaveLength(0);
+    } finally { await db.exec('reset role'); }
+    const g = await act(id, 0, { ...contribution(photoId), photoPath: path });
+    expect(g.proposals.find((p) => p.id === photoId)?.photoPath).toBe(path);
+    await expect(act(id, 0, { ...contribution('bad-photo'), photoPath: path })).rejects.toThrow('invalid_photo');
   });
   it('releases rejected reservations and does not alter existing redemptions when reward price changes', async () => {
     const id = await makeGroup();

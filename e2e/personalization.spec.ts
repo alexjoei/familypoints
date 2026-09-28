@@ -30,7 +30,7 @@ test('themes are selectable, applied throughout the app, and survive a reload', 
   await page.setViewportSize({ width: 360, height: 780 });
   await page.goto('/');
   await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
-  for (const theme of ['Calma', 'Noche', 'Pop']) {
+  for (const theme of ['Calma', 'Noche', 'Club', 'Pop']) {
     await page.getByRole('tab', { name: 'Grupo' }).click();
     await page.getByRole('radio', { name: theme, exact: true }).click();
     await expect(page.getByRole('radio', { name: theme, exact: true })).toBeChecked();

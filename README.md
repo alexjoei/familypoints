@@ -12,7 +12,7 @@ Al crear un grupo se abre **Compartir grupo** con su código visible. El creador
 
 ## Probar ahora
 
-**Android instalable:** [APK de prueba 0.1.2](https://expo.dev/artifacts/eas/gQB6TfohJGUTldRl2NwnsDze3BqnOCNyuLqIobItmho.apk). [Instrucciones y estado de verificación](docs/apk-prueba.md).
+**Android instalable:** [APK de prueba 0.1.4](https://expo.dev/artifacts/eas/DcHWFZWGZnYSoraJKjol8WTKdH7oFbHoOJbQmX8zDeM.apk). La versión 0.1.5 está en preparación. [Instrucciones y estado de verificación](docs/apk-prueba.md).
 
 Requisitos: Node.js 24 LTS (Expo requiere al menos 22.13) y npm.
 
@@ -54,8 +54,10 @@ No hace falta desactivar TLS ni cambiar certificados globales.
 - Categorías y plantillas editables por quien administra.
 - Español/inglés y humor desactivable.
 - Botón + centrado abajo en todas las pantallas del grupo: Añadir Family Points.
-- Botín individual y Canjear Family Points, con textos más informales.
-- Estilos Pop, Calma y Noche, elegibles en Grupo y guardados en el dispositivo.
+- Puntos acumulados y Canjear puntos, con textos más informales.
+- Estilos Pop (predeterminado), Calma, Noche y Club, elegibles en Grupo y guardados en el dispositivo.
+- Saldo de cada miembro en Grupo; canjes hasta -100 puntos por defecto, con un límite de 0 a 100 modificable por mayoría.
+- Formulario de aportación más corto: categoría desplegable, pocas ideas iniciales y foto opcional de hasta 2 MB, visible solo al grupo.
 - Estado de cada votante: pendiente, visto sin votar, aprobado o rechazado. Abrir el detalle marca la revisión como vista; aparecer en la lista no lo hace.
 
 La demo mantiene sus cambios al recargar; hay que volver a entrar en ella desde la bienvenida. Los nombres y textos escritos por los miembros no se traducen automáticamente.

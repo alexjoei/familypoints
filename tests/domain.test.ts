@@ -7,7 +7,7 @@ const command = {
   kind: 'contribution' as const,
   title: 'Dinner',
   points: 20,
-  category: 'Cocinar',
+  category: 'Cocina',
   date: '2026-09-26',
   note: '',
   templateId: 'template-0',
@@ -89,9 +89,24 @@ describe('group agreements', () => {
     const cmd = { ...command, kind: 'redemption' as const, rewardId: 'demo-r1', points: 1 };
     g = applyCommand(g, 'alex', cmd);
     expect(balance(g, 'alex')).toMatchObject({ available: 10, reserved: 30, spent: 0 });
-    expect(() => applyCommand(g, 'alex', { ...cmd, id: 'other' })).toThrow('insufficient_balance');
+    for (const id of ['other', 'third', 'fourth']) g = applyCommand(g, 'alex', { ...cmd, id });
+    expect(balance(g, 'alex').available).toBe(-80);
+    expect(() => applyCommand(g, 'alex', { ...cmd, id: 'fifth' })).toThrow('insufficient_balance');
     g = applyCommand(g, 'alex', { type: 'withdraw', id: 'new', revision: 1 });
-    expect(balance(g, 'alex').available).toBe(40);
+    expect(balance(g, 'alex').available).toBe(-50);
+  });
+  it('applies a group-approved limit of zero to future redemptions', () => {
+    let g = createDemo('es', 'group');
+    g = applyCommand(g, 'alex', {
+      type: 'submit', id: 'limit', kind: 'debt_limit', title: 'No negative points',
+      points: 0, category: '', note: '', date: '2026-09-26',
+    });
+    expect(g.debtLimit).toBe(100);
+    g = vote(vote(g, 'sam', 'limit'), 'dani', 'limit');
+    expect(g.debtLimit).toBe(0);
+    g = applyCommand(g, 'alex', { ...command, id: 'redeem', kind: 'redemption', rewardId: 'demo-r1' });
+    expect(balance(g, 'alex').available).toBe(10);
+    expect(() => applyCommand(g, 'alex', { ...command, id: 'too-much', kind: 'redemption', rewardId: 'demo-r1' })).toThrow('insufficient_balance');
   });
   it('spends a reserved redemption only once', () => {
     let g = applyCommand(createDemo('es', 'group'), 'alex', {
@@ -135,7 +150,7 @@ describe('group agreements', () => {
     expect(() => applyCommand(g, 'alex', { ...command, date: '2026-02-30' })).toThrow(
       'invalid_date',
     );
-    expect(() => applyCommand(g, 'alex', { ...command, category: 'Compra' })).toThrow(
+    expect(() => applyCommand(g, 'alex', { ...command, category: 'Casa' })).toThrow(
       'invalid_template',
     );
   });

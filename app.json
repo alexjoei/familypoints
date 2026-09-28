@@ -3,7 +3,7 @@
     "name": "Family Points",
     "slug": "family-points",
     "scheme": "familypoints",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -27,7 +27,12 @@
       "expo-secure-store",
       "expo-web-browser",
       "expo-router",
-      "expo-font"
+      "expo-font",
+      ["expo-image-picker", {
+        "photosPermission": "Family Points accede solo a la foto que elijas para añadirla a una aportación.",
+        "cameraPermission": false,
+        "microphonePermission": false
+      }]
     ],
     "extra": {
       "router": {},

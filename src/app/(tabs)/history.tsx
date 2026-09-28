@@ -34,6 +34,7 @@ export default function History() {
           ['all', t('Todo', 'All')],
           ['contribution', t('Aportaciones', 'Contributions')],
           ['redemption', t('Canjes', 'Redemptions')],
+          ['debt_limit', t('Reglas', 'Rules')],
           ['rejected', t('Rechazadas', 'Rejected')],
         ].map(([key, label]) => (
           <Chip key={key} label={label} selected={filter === key} onPress={() => setFilter(key)} />

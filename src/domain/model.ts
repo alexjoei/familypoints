@@ -1,5 +1,5 @@
 export type Language = 'es' | 'en';
-export type Kind = 'contribution' | 'reward' | 'redemption' | 'reward_change';
+export type Kind = 'contribution' | 'reward' | 'redemption' | 'reward_change' | 'debt_limit';
 export type Status = 'pending' | 'approved' | 'rejected' | 'withdrawn';
 export type Member = { id: string; name: string };
 export type Template = { id: string; title: string; category: string; points: number };
@@ -16,6 +16,7 @@ export type Proposal = {
   note: string;
   templateId?: string;
   rewardId?: string;
+  photoPath?: string;
   status: Status;
   revision: number;
   electorate: string[];
@@ -40,6 +41,7 @@ export type Group = {
   members: Member[];
   categories: string[];
   templates: Template[];
+  debtLimit?: number;
   proposals: Proposal[];
   activity: Activity[];
 };
@@ -55,6 +57,7 @@ export type Command =
       note: string;
       templateId?: string;
       rewardId?: string;
+      photoPath?: string;
     }
   | { type: 'vote'; id: string; revision: number; choice: 'approve' | 'reject' }
   | { type: 'adjust'; id: string; revision: number; points: number }
@@ -173,7 +176,9 @@ export function applyCommand(
   }
   if (cmd.type === 'submit') {
     requireThat(!g.proposals.some((p) => p.id === cmd.id), 'duplicate');
-    validPoints(cmd.points);
+    if (cmd.kind === 'debt_limit')
+      requireThat(Number.isSafeInteger(cmd.points) && cmd.points >= 0 && cmd.points <= 100, 'invalid_points');
+    else validPoints(cmd.points);
     validText(cmd.title);
     requireThat(cmd.note.length <= 1000, 'invalid_note');
     requireThat(
@@ -200,7 +205,7 @@ export function applyCommand(
       title = reward.title;
       if (cmd.kind === 'redemption') {
         points = rewardCost(g, reward);
-        requireThat(balance(g, actor).available >= points, 'insufficient_balance');
+        requireThat(balance(g, actor).available - points >= -(g.debtLimit ?? 100), 'insufficient_balance');
       }
     }
     g.proposals.push({
@@ -254,7 +259,7 @@ export function applyCommand(
     return g;
   }
   if (cmd.type === 'adjust') {
-    requireThat(p.kind !== 'redemption' && p.electorate.includes(actor), 'not_allowed');
+    requireThat(p.kind !== 'redemption' && p.kind !== 'debt_limit' && p.electorate.includes(actor), 'not_allowed');
     requireThat(!p.adjustment, 'adjustment_pending');
     validPoints(cmd.points);
     p.adjustment = { actor, points: cmd.points };
@@ -288,6 +293,7 @@ export function applyCommand(
       const t = g.templates.find((t) => t.id === p.templateId);
       if (t) t.points = p.points;
     }
+    if (p.status === 'approved' && p.kind === 'debt_limit') g.debtLimit = p.points;
   }
   return g;
 }

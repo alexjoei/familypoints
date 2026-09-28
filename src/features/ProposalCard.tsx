@@ -1,10 +1,11 @@
-import { useState } from 'react';
-import { View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Image, View } from 'react-native';
 import { router } from 'expo-router';
 import { Proposal, quorum } from '../domain/model';
 import { useApp } from '../state/AppProvider';
 import { Button, Card, Field, Txt, useUi } from '../components/ui';
 import { VoterStates } from './VoterStates';
+import { contributionPhotoUrl } from '../lib/contribution-photo';
 export function ProposalCard({
   proposal: p,
   detail = false,
@@ -15,12 +16,23 @@ export function ProposalCard({
   const { colors, s } = useUi();
   const { group: g, actor, t, execute, busy, language } = useApp();
   const [adjust, setAdjust] = useState(false),
-    [points, setPoints] = useState(String(p.points));
+    [points, setPoints] = useState(String(p.points)),
+    [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let active = true;
+    if (!p.photoPath) return;
+    contributionPhotoUrl(p.photoPath).then((url) => {
+      if (active) setPhotoUrl(url);
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [p.photoPath]);
   const votes = p.votes.filter((v) => v.revision === p.revision),
     own = p.author === actor,
     canVote = p.electorate.includes(actor) && !votes.some((v) => v.actor === actor);
   const kind =
-    p.kind === 'contribution'
+    p.kind === 'debt_limit'
+      ? t('REGLA DEL GRUPO', 'GROUP RULE')
+      : p.kind === 'contribution'
       ? t('SUMAR PUNTOS', 'ADD POINTS')
       : p.kind === 'redemption'
         ? t('CANJE', 'REDEMPTION')
@@ -36,7 +48,9 @@ export function ProposalCard({
       </View>
       <Txt style={s.subtitle}>
         {p.status === 'pending'
-          ? p.kind === 'contribution'
+          ? p.kind === 'debt_limit'
+            ? t(`${author} propone un límite de ${p.points} puntos negativos`, `${author} suggests a ${p.points}-point negative balance limit`)
+            : p.kind === 'contribution'
             ? t(
                 `${author} quiere sumar ${p.points} puntos`,
                 `${author} wants to add ${p.points} points`,
@@ -76,7 +90,9 @@ export function ProposalCard({
                     'Waiting for the other members to accept.',
                   )
                 : canVote
-                  ? p.kind === 'redemption'
+                  ? p.kind === 'debt_limit'
+                    ? t('Te toca revisar: acepta o rechaza el nuevo límite.', 'Your turn: accept or reject the new limit.')
+                    : p.kind === 'redemption'
                     ? t(
                         'Te toca revisar: acepta o rechaza el canje.',
                         'Your turn to review: accept or reject the redemption.',
@@ -96,6 +112,7 @@ export function ProposalCard({
         {p.category ? ` · ${p.category}` : ''}
       </Txt>
       {!!p.note && <Txt>{p.note}</Txt>}
+      {photoUrl && <Image source={{ uri: photoUrl }} style={{ width: '100%', height: 190, borderRadius: 14 }} resizeMode="cover" />}
       <Txt style={{ fontSize: 13, fontWeight: '600' }}>
         {t(
           `${votes.filter((v) => v.choice === 'approve').length} de ${quorum(p.electorate)} aprobaciones`,
@@ -179,7 +196,7 @@ export function ProposalCard({
               </Txt>
             )
           )}
-          {!own && p.electorate.includes(actor) && p.kind !== 'redemption' && !p.adjustment && (
+          {!own && p.electorate.includes(actor) && p.kind !== 'redemption' && p.kind !== 'debt_limit' && !p.adjustment && (
             <Button
               label={t('Proponer puntos', 'Suggest points')}
               variant="ghost"

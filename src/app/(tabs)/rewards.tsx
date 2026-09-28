@@ -39,9 +39,12 @@ export default function Rewards() {
             {b.reserved} {t('puntos reservados', 'points reserved')}
           </Txt>
         )}
+        <Txt style={s.muted}>
+          {t(`Puedes llegar hasta -${g.debtLimit ?? 100} pt.`, `You can go down to -${g.debtLimit ?? 100} pt.`)}
+        </Txt>
       </Card>
       <Button
-        label={t('Añadir opción de canje', 'Add redemption option')}
+        label={t('Canjear puntos', 'Redeem points')}
         icon="add"
         variant="secondary"
         onPress={() => {
@@ -157,14 +160,14 @@ export default function Rewards() {
             </Txt>
             <Button
               label={
-                b.available >= cost
+                b.available - cost >= -(g.debtLimit ?? 100)
                   ? t('Canjear puntos', 'Redeem points')
                   : t(
-                      `Te faltan ${cost - b.available} puntos`,
-                      `${cost - b.available} more points to go`,
+                      `Te faltan ${cost - b.available - (g.debtLimit ?? 100)} puntos`,
+                      `${cost - b.available - (g.debtLimit ?? 100)} more points to go`,
                     )
               }
-              disabled={b.available < cost || busy}
+              disabled={b.available - cost < -(g.debtLimit ?? 100) || busy}
               onPress={() => {
                 setConfirm(r);
                 setRedemptionId(Crypto.randomUUID());
@@ -184,8 +187,8 @@ export default function Rewards() {
               <View style={{ gap: 10, padding: 14, backgroundColor: colors.bg, borderRadius: 14 }}>
                 <Txt>
                   {t(
-                    `Se reservarán ${cost} puntos hasta que el grupo decida.`,
-                    `We will reserve ${cost} points until the group decides.`,
+                    `Se reservarán ${cost} puntos hasta que el grupo decida. Te quedarán ${b.available - cost} disponibles.`,
+                    `We will reserve ${cost} points until the group decides. You will have ${b.available - cost} available.`,
                   )}
                 </Txt>
                 <Button

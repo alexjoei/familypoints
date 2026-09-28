@@ -2,13 +2,10 @@ import { applyCommand, Group, Language, Template } from './model';
 export function starterTemplates(language: Language): Template[] {
   const es = language === 'es';
   return [
-    [es ? 'Preparar una cena' : 'Make dinner', es ? 'Cocinar' : 'Cooking', 15],
-    [es ? 'Fregar los platos' : 'Wash the dishes', es ? 'Limpieza' : 'Cleaning', 10],
-    [es ? 'Hacer la compra' : 'Get the groceries', es ? 'Compra' : 'Shopping', 20],
+    [es ? 'Preparar una cena' : 'Make dinner', es ? 'Cocina' : 'Cooking', 15],
+    [es ? 'Poner la casa a punto' : 'Tidy up the place', es ? 'Casa' : 'Home', 15],
     [es ? 'Resolver una gestión' : 'Handle an errand', es ? 'Gestiones' : 'Errands', 15],
-    [es ? 'Encargarse de un cuidado' : 'Take care of someone', es ? 'Cuidado' : 'Care', 20],
-    [es ? 'Organizar un plan' : 'Organize a plan', es ? 'Organización' : 'Organizing', 15],
-    [es ? 'Echar una mano' : 'Lend a hand', es ? 'Favores' : 'Favors', 10],
+    [es ? 'Echar una mano' : 'Lend a hand', es ? 'Otros' : 'Other', 10],
   ].map(([title, category, points], i) => ({
     id: `template-${i}`,
     title: String(title),
@@ -31,6 +28,7 @@ export function createDemo(language: Language, variant: 'couple' | 'group' = 'co
     ],
     categories: templates.map((t) => t.category),
     templates,
+    debtLimit: 100,
     proposals: [],
     activity: [],
   };

@@ -15,8 +15,8 @@ export default function Pending() {
     <Page
       title={t('Aceptar puntos', 'Accept points')}
       subtitle={t(
-        'Revisa quién quiere sumar o canjear puntos. Acepta, rechaza o propón otra cantidad.',
-        'Review who wants to add or redeem points. Accept, reject or suggest another amount.',
+        'Revisa puntos, canjes y acuerdos del grupo. Acepta, rechaza o propón otra cantidad cuando toque.',
+        'Review points, redemptions and group agreements. Accept, reject or suggest another amount when it fits.',
       )}
     >
       <View style={s.wrap}>

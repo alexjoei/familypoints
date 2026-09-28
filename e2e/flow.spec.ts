@@ -11,6 +11,25 @@ test('joining with a pasted group code enables the next step', async ({ page }) 
   await page.goto('/join');
   await expect(page.getByRole('textbox', { name: 'Pega o escribe el código' })).toHaveValue('ab12cd34ef56');
 });
+
+test('group shows member balances and votes on the negative balance limit', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
+  await page.getByRole('tab', { name: 'Grupo' }).click();
+  const members = page.getByText('Miembros', { exact: true }).locator('..');
+  await expect(members.getByText('40 pt')).toBeVisible();
+  await expect(members.getByText('20 pt')).toBeVisible();
+  await page.getByRole('button', { name: 'Cambiar límite de saldo' }).click();
+  await page.getByRole('textbox', { name: 'Puntos negativos permitidos' }).fill('0');
+  await page.getByRole('button', { name: 'Pedir acuerdo al grupo' }).click();
+  await page.getByRole('tab', { name: 'Inicio' }).click();
+  await page.getByRole('button', { name: 'Sam', exact: true }).click();
+  await page.getByRole('tab', { name: 'Pendientes' }).click();
+  await expect(page.getByText('Alex propone un límite de 0 puntos negativos')).toBeVisible();
+  await page.getByRole('button', { name: 'Aceptar', exact: true }).last().click();
+  await page.getByRole('tab', { name: 'Grupo' }).click();
+  await expect(page.getByText('Hasta 0 puntos negativos')).toBeVisible();
+});
 test('mobile demo: create, reach majority, redeem, persist and change language', async ({
   page,
 }) => {
@@ -43,7 +62,7 @@ test('mobile demo: create, reach majority, redeem, persist and change language',
   await page.getByRole('tab', { name: 'Inicio' }).click();
   await page.getByRole('button', { name: 'Alex', exact: true }).click();
   await page.getByRole('tab', { name: 'Canjes' }).click();
-  await page.getByRole('button', { name: 'Canjear puntos', exact: true }).first().click();
+  await page.getByRole('button', { name: 'Canjear puntos', exact: true }).nth(1).click();
   await page.getByRole('button', { name: 'Pedir canje al grupo' }).click();
   await expect(page.getByText('CANJE', { exact: true })).toBeVisible();
   await page.getByRole('tab', { name: 'Inicio' }).click();

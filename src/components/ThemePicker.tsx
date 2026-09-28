@@ -14,7 +14,7 @@ export function ThemePicker() {
       <View
         accessibilityRole="radiogroup"
         accessibilityLabel={t('Estilo visual', 'Visual style')}
-        style={{ flexDirection: 'row', gap: 8 }}
+        style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}
       >
         {(Object.keys(themes) as ThemeId[]).map((id) => {
           const item = themes[id],
@@ -28,7 +28,8 @@ export function ThemePicker() {
               aria-checked={selected}
               onPress={() => setThemeId(id)}
               style={{
-                flex: 1,
+                width: '48%',
+                flexGrow: 1,
                 minHeight: 126,
                 padding: 10,
                 gap: 12,
