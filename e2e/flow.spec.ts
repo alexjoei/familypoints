@@ -12,6 +12,20 @@ test('joining with a pasted group code enables the next step', async ({ page }) 
   await expect(page.getByRole('textbox', { name: 'Pega o escribe el código' })).toHaveValue('ab12cd34ef56');
 });
 
+test('a contribution can include a photo visible to the group', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
+  await page.getByRole('button', { name: 'Sumar puntos', exact: true }).first().click();
+  await page.getByRole('textbox', { name: '¿Qué has hecho?' }).fill('Montar la mesa');
+  const chooser = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: 'Añadir foto (opcional)' }).click();
+  await (await chooser).setFiles('assets/icon.png');
+  await expect(page.getByRole('button', { name: 'Cambiar foto' })).toBeVisible();
+  await page.getByRole('button', { name: 'Pedir que acepten mis puntos' }).click();
+  const card = page.getByText('Montar la mesa', { exact: true }).filter({ visible: true }).locator('..');
+  await expect(card.locator('img')).toBeVisible();
+});
+
 test('group shows member balances and votes on the negative balance limit', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();

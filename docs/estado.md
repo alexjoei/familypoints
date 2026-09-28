@@ -59,4 +59,10 @@ Demo Alex y Sam, una aceptación ajena. Se usa una clave local nueva `fp.demo.co
 
 Configuración externa del 28 de septiembre: proyecto Supabase qvrfzvsciconvswrjbhy creado en Irlanda (Free). Ambas migraciones aplicadas mediante SQL Editor en una transacción; seis tablas verificadas con RLS activo. URL y clave pública configuradas en .env (excluido de Git) y EAS preview. Google Cloud familypoints-510007: cliente Web Family Points Supabase creado y conectado al proveedor Google. Secreto guardado únicamente en Supabase, nunca en el repositorio ni APK. Retornos permitidos: familypoints://auth/callback, http://127.0.0.1:4173/auth/callback y http://localhost:8081/auth/callback. No volver a ejecutar las migraciones iniciales sobre este proyecto.
 
-APK 0.1.2 (versionCode 3) finalizado en EAS, descargado y verificado estructuralmente. Enlace entregado por WhatsApp a alex propio. Véase docs/apk-prueba.md para descarga y prueba en dos móviles.
+APK 0.1.2 (versionCode 3) finalizado en EAS, descargado y verificado estructuralmente. Véase docs/apk-prueba.md para descarga y prueba en dos móviles.
+
+## 28 de septiembre: saldos, fotos y nuevo aspecto
+
+En Grupo se ven los miembros con sus puntos acumulados. Los canjes pueden dejar hasta 100 puntos negativos por defecto; cambiar el límite entre 0 y 100 requiere propuesta y mayoría ajena. Las categorías iniciales se redujeron a cuatro, se eligieron sugerencias más cortas y el formulario de aportación usa categoría desplegable e ideas plegadas. Se añadió una foto opcional, comprimida a JPEG, con almacenamiento privado para miembros del grupo. El tema Pop es el predeterminado y Club ofrece un aspecto más atrevido.
+
+Migraciones `202609280004_debt_limit.sql` y `202609280005_contribution_photos.sql` aplicadas en Supabase y confirmadas por el editor SQL. Los commits `e925fab` y `756f884` están publicados en `main`. TypeScript, lint, 48 pruebas de reglas y base de datos, 9 recorridos web (incluida foto), export web/Android y Expo Doctor 21/21 correctos. El APK 0.1.5 está en compilación; la subida de fotos y Google nativo aún necesitan prueba en un Android físico. Google nativo permanece desactivado hasta registrar el cliente OAuth Android.

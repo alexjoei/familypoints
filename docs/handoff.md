@@ -1,5 +1,15 @@
 # Family Points — relevo de trabajo (28 septiembre 2026)
 
+## Estado más reciente (28 septiembre, 17:32 Madrid)
+
+Los cambios de saldos por miembro, límite negativo votado, formulario compacto, foto opcional y tema Club están publicados en `main` (`e925fab`, `756f884`). Las migraciones 004 y 005 se ejecutaron correctamente en el SQL Editor de Supabase. Pasan 48 pruebas locales, typecheck, lint, 9 E2E web (incluida foto), Expo Doctor 21/21 y CI de ambos commits. Google nativo continúa desactivado por falta del cliente OAuth Android; el APK usa el flujo alojado de Supabase.
+
+APK 0.1.5/versionCode 7, build EAS `0299174f-d8b6-453b-945f-f04ce0e1a9b7`: https://expo.dev/accounts/alexjoei/projects/family-points/builds/0299174f-d8b6-453b-945f-f04ce0e1a9b7 . En cola a las 17:32; esperar FINISHED, descargar y verificar el APK, actualizar `docs/apk-prueba.md` y README. La build anterior `3fbeaf0e-0773-45a4-b2c2-7ef57ff513ba` se canceló porque se corrigió la lectura nativa de fotos con `expo-file-system`. El preview web se sirve en `http://localhost:4173` mediante `node scripts/serve-web.mjs`; comprobar que sigue activo si cambia el turno.
+
+El usuario **sí pidió** que, al terminar, se envíe el APK por WhatsApp solo a «Alex» en la sesión anónima de Chrome. Una revisión automática rechazó abrir la pestaña WhatsApp ID `937668785` porque no pudo verificar que fuera la sesión anónima; prohibió rodear el rechazo. Se solicitó al usuario que @mencione la pestaña correcta. **No acceder a la pestaña rechazada ni usar otra vía para rodear el rechazo.** Si no llega @mención/identificación verificable, entregar el enlace en el chat y explicar el bloqueo.
+
+Las secciones históricas siguientes describen estados anteriores y no reemplazan esta actualización.
+
 ## Objetivo y preferencias vigentes
 
 MVP Expo/React Native para iOS/Android, en español e inglés, gratuito, válido para parejas y otros grupos. Cada persona gana y canjea sus puntos; el resto aprueba por mayoría, sin autovoto; historial visible. Copy cercano: «Sumar puntos», «Aceptar puntos», «Canjear puntos» y «Puntos acumulados». Demo Alex y Sam. Botón `+` centrado y disponible en todas las pantallas de grupo. Temas Pop/Calma/Noche.
