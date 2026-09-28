@@ -40,6 +40,10 @@ Ruta gratuita elegida: [Expo Google authentication](https://docs.expo.dev/guides
 
 **Bloqueo de herramienta:** al intentar abrir Google Cloud con Computer Use, auto-review primero rechazó el acceso por límite de uso e indicó reintentar después de las 2:47 PM. Un segundo intento tras el reset fue rechazado como riesgo inaceptable y prohibió explícitamente rodear el bloqueo mediante otro navegador, CDP, shell, CLI u otra vía equivalente. No intentarlo de nuevo por una vía alternativa. Si persiste, pedir al usuario que configure el cliente Android con paquete y SHA-1 indicados o que resuelva el acceso. Crear un cliente OAuth Android en la UI implica credenciales persistentes; cumplir la política de confirmación de la herramienta en el momento de guardarlo. El usuario ya eligió Google nativo gratis como dirección de producto. Se instalaron temporalmente `react-native-nitro-google-signin` y Nitro Modules, pero se retiraron: el plugin añadido automáticamente exigía `iosUrlScheme` sin disponer aún de cliente iOS. No entregar un build roto o afirmar que Google nativo está implementado.
 
+## Actualización de entrega
+
+Commit `0f7c832` publicado en `main`. Se lanzó APK Android 0.1.4 con EAS build `b986f6b2-18fc-4416-99fe-e0b1471ea194`: https://expo.dev/accounts/alexjoei/projects/family-points/builds/b986f6b2-18fc-4416-99fe-e0b1471ea194 . En la última consulta seguía `IN_QUEUE`, sin artefacto todavía. Este build contiene las correcciones de invitación y **mantiene OAuth alojado de Supabase**; Google nativo no está implementado. Consultar `npx eas-cli@latest build:view b986f6b2-18fc-4416-99fe-e0b1471ea194 --json`, obtener URL `artifacts.buildUrl` si termina, descargar y verificar APK. Los tests locales pasaron: 45 unitarias, 7 E2E, typecheck, lint y export web.
+
 ## Entrega pendiente
 
 1. Terminar y verificar correcciones de invitación/teclado, incluidas pruebas locales y de BD.
