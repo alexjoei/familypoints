@@ -76,8 +76,26 @@ export const authRedirect = () =>
     path: 'auth/callback',
     native: 'familypoints://auth/callback',
   });
+export const nativeGoogleEnabled =
+  Platform.OS === 'android' && process.env.EXPO_PUBLIC_NATIVE_GOOGLE_ENABLED === 'true';
 export async function googleLogin() {
   if (!supabase) throw new Error('not_configured');
+  if (nativeGoogleEnabled) {
+    const rawNonce = Array.from(await Crypto.getRandomBytesAsync(32), (byte) =>
+      byte.toString(16).padStart(2, '0'),
+    ).join('');
+    const hashedNonce = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, rawNonce);
+    const { getNativeGoogleIdToken } = await import('./google-native');
+    const token = await getNativeGoogleIdToken(hashedNonce);
+    if (!token) return;
+    const { error } = await supabase.auth.signInWithIdToken({
+      provider: 'google',
+      token,
+      nonce: rawNonce,
+    });
+    if (error) throw error;
+    return;
+  }
   const redirectTo = authRedirect();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',

@@ -42,7 +42,9 @@ Ruta gratuita elegida: [Expo Google authentication](https://docs.expo.dev/guides
 
 ## Actualización de entrega
 
-Commit `0f7c832` publicado en `main`. Se lanzó APK Android 0.1.4 con EAS build `b986f6b2-18fc-4416-99fe-e0b1471ea194`: https://expo.dev/accounts/alexjoei/projects/family-points/builds/b986f6b2-18fc-4416-99fe-e0b1471ea194 . En la última consulta seguía `IN_QUEUE`, sin artefacto todavía. Este build contiene las correcciones de invitación y **mantiene OAuth alojado de Supabase**; Google nativo no está implementado. Consultar `npx eas-cli@latest build:view b986f6b2-18fc-4416-99fe-e0b1471ea194 --json`, obtener URL `artifacts.buildUrl` si termina, descargar y verificar APK. Los tests locales pasaron: 45 unitarias, 7 E2E, typecheck, lint y export web.
+Commit `0f7c832` publicado en `main`. APK Android 0.1.4 terminado: https://expo.dev/artifacts/eas/DcHWFZWGZnYSoraJKjol8WTKdH7oFbHoOJbQmX8zDeM.apk . Este build contiene las correcciones de invitación y **mantiene OAuth alojado de Supabase**. Los tests locales pasaron: 45 unitarias, 7 E2E, typecheck, lint y export web.
+
+Trabajo posterior en curso: se añadieron `react-native-nitro-google-signin` y Nitro Modules, `src/lib/google-native.android.ts` y una ruta nativa con nonce y `signInWithIdToken` en `src/lib/supabase.ts`. Solo se ejecuta si `EXPO_PUBLIC_NATIVE_GOOGLE_ENABLED=true`; mientras falte el cliente OAuth Android, sigue la ruta alojada. El plugin iOS generado automáticamente se quitó de `app.json` porque exige un cliente iOS aún no creado; Android usa autolinking y webClientId explícito. Pasaron `npm run check`, export web, export Android, `expo config` y `expo-doctor` (21/21); **falta build nativo y prueba real**. Se intentó repetir E2E: primero puerto 4173 ocupado por un servidor anterior; tras cerrarlo, Playwright agotó 60 s esperando su nuevo servidor. Las 7 E2E habían pasado en el commit previo y no se modificaron pantallas en este bloque. Instrucciones precisas para el cliente Google Cloud y la activación: [google-native-android.md](google-native-android.md). No afirmar que ya está operativo ni que el APK 0.1.4 lo contiene.
 
 ## Entrega pendiente
 
