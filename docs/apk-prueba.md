@@ -1,8 +1,13 @@
 # APK de prueba — 28 de septiembre de 2026
 
-La versión **0.1.7** (Android versionCode 9, `app.familypoints.mobile`) [se está compilando en EAS](https://expo.dev/accounts/alexjoei/projects/family-points/builds/ff1f1b3e-d790-413e-8e72-f8be5e2650bf). Se compila desde el commit `c8a2a52`. Publicaremos aquí el enlace directo cuando EAS entregue y verifiquemos el APK.
+La versión **0.1.7** (Android versionCode 9, `app.familypoints.mobile`) está lista para instalar. Se compiló desde el commit `c8a2a52` con la misma firma Android de las versiones anteriores.
 
-El [APK 0.1.6](https://expo.dev/artifacts/eas/g1NQsBQJ58CK8TYr-U5YtIWHgGccXR76vnnLsHFfZqA.apk) está disponible, pero **no incluye** el nuevo rechazo reversible, Configuración de grupo ni el estilo Cool.
+- [Descargar APK 0.1.7](https://expo.dev/artifacts/eas/XILGfrjedwHuc8Oc6RafnisOYmd5iJVowx_zBH6o8fY.apk)
+- [Build finalizado en Expo](https://expo.dev/accounts/alexjoei/projects/family-points/builds/ff1f1b3e-d790-413e-8e72-f8be5e2650bf)
+- Copia local: `artifacts/family-points-0.1.7.apk` (106.984.884 bytes).
+- SHA256: `CB1C481D1405625D6B53FA46FC96B61B97996AAA26E7E40BDEAF444588F02EBB`.
+
+Abre el enlace desde Android, descarga el archivo y ábrelo. Si Android lo pide, permite a ese navegador instalar aplicaciones. No hace falta Expo Go ni el servidor local.
 
 ## Qué probar en 0.1.7
 
@@ -19,7 +24,7 @@ La demo de pareja funciona sin cuenta, pero sus datos son locales y no se sincro
 
 ## Verificación del código
 
-55 pruebas, TypeScript, lint, nueve recorridos web, export web y Android correctos. La migración `202609290007_undo_and_settings.sql` se aplicó en Supabase con resultado correcto. Falta la verificación estructural del APK cuando EAS finalice.
+55 pruebas, TypeScript, lint, nueve recorridos web, export web y Android correctos. La migración `202609290007_undo_and_settings.sql` se aplicó en Supabase con resultado correcto. EAS terminó y el APK descargado superó la comprobación ZIP, manifiesto Android, código DEX y bundle integrado. Falta la prueba en dispositivos Android físicos.
 
 ## Recompilar
 
