@@ -182,7 +182,6 @@ export function applyCommand(
     });
   const electorate = () => g.members.filter((m) => m.id !== actor).map((m) => m.id);
   if (cmd.type === 'category') {
-    requireThat(actor === g.owner, 'owner_only');
     validText(cmd.title, 40);
     requireThat(!g.categories.includes(cmd.title.trim()), 'duplicate');
     g.categories.push(cmd.title.trim());
@@ -190,7 +189,6 @@ export function applyCommand(
     return g;
   }
   if (cmd.type === 'remove_category') {
-    requireThat(actor === g.owner, 'owner_only');
     requireThat(g.categories.includes(cmd.title), 'not_found');
     requireThat(!g.templates.some((t) => t.category === cmd.title), 'category_in_use');
     g.categories = g.categories.filter((c) => c !== cmd.title);
@@ -198,7 +196,6 @@ export function applyCommand(
     return g;
   }
   if (cmd.type === 'remove_template') {
-    requireThat(actor === g.owner, 'owner_only');
     const template = g.templates.find((t) => t.id === cmd.id);
     requireThat(template, 'not_found');
     g.templates = g.templates.filter((t) => t.id !== cmd.id);
@@ -216,7 +213,6 @@ export function applyCommand(
     return g;
   }
   if (cmd.type === 'template') {
-    requireThat(actor === g.owner, 'owner_only');
     validPoints(cmd.points);
     validText(cmd.title);
     requireThat(g.categories.includes(cmd.category), 'invalid_category');

@@ -28,12 +28,7 @@ export default function Home() {
         </View>
       }
     >
-      <View style={{ backgroundColor: colors.green, padding: 26, borderRadius: 26, gap: 14, overflow: 'hidden' }}>
-        {app.themeId === 'cool' && <>
-          <View pointerEvents="none" style={{ position: 'absolute', width: 122, height: 122, borderRadius: 61, borderWidth: 1, borderColor: '#FFFFFF55', top: -70, right: -22 }} />
-          <View pointerEvents="none" style={{ position: 'absolute', width: 68, height: 68, borderRadius: 34, borderWidth: 1, borderColor: '#FFFFFF44', bottom: -32, left: -20 }} />
-          <View pointerEvents="none" style={{ position: 'absolute', width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFD440', top: 28, right: 77 }} />
-        </>}
+      <View style={{ backgroundColor: colors.green, padding: 26, borderRadius: 26, gap: 14 }}>
         <View style={s.between}>
           <Txt style={{ color: colors.heroMuted, fontWeight: '600' }}>
             {t('Puntos acumulados', 'Accumulated points')}

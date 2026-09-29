@@ -4,7 +4,7 @@ test('the centered add button stays available on every group screen without rese
 }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
-  for (const tab of ['Inicio', 'Pendientes', 'Canjes', 'Historial', 'grupo']) {
+  for (const tab of ['Inicio', 'Pendientes', 'Canjes', 'Historial', 'Configuración']) {
     await page.getByRole('tab', { name: tab, exact: false }).click();
     const button = page.getByTestId('add-family-points');
     await expect(button).toBeVisible();
@@ -30,8 +30,8 @@ test('themes are selectable, applied throughout the app, and survive a reload', 
   await page.setViewportSize({ width: 360, height: 780 });
   await page.goto('/');
   await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
-  for (const theme of ['Calma', 'Noche', 'Cool', 'Pop']) {
-    await page.getByRole('tab', { name: /grupo/i }).click();
+  for (const theme of ['Calma', 'Noche', 'Pop']) {
+    await page.getByRole('tab', { name: /configuración/i }).click();
     await page.getByRole('radio', { name: theme, exact: true }).click();
     await expect(page.getByRole('radio', { name: theme, exact: true })).toBeChecked();
     await page.getByRole('tab', { name: 'Inicio' }).click();
@@ -41,12 +41,12 @@ test('themes are selectable, applied throughout the app, and survive a reload', 
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
     ).toBe(true);
   }
-  await page.getByRole('tab', { name: /grupo/i }).click();
+  await page.getByRole('tab', { name: /configuración/i }).click();
   await page.getByRole('radio', { name: 'Noche', exact: true }).click();
   await page.getByRole('tab', { name: 'Inicio' }).click();
   await page.reload();
   await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
-  await page.getByRole('tab', { name: /grupo/i }).click();
+  await page.getByRole('tab', { name: /configuración/i }).click();
   await expect(page.getByRole('radio', { name: 'Noche', exact: true })).toBeChecked();
   await page.getByTestId('add-family-points').click();
   await page.screenshot({ path: 'artifacts/add-night.png', fullPage: true });
@@ -76,4 +76,20 @@ test('pending cards show each voter, distinguish viewing from voting and show bo
   await page.getByRole('button', { name: 'Deshacer mi rechazo' }).click();
   await expect(page.getByText('Alex ha deshecho su rechazo')).toBeVisible();
   await page.screenshot({ path: 'artifacts/voter-states.png', fullPage: true });
+});
+test('a non-owner can manage categories and suggestions from Configuración', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
+  await page.getByRole('button', { name: 'Sam', exact: true }).click();
+  await page.getByRole('tab', { name: 'Configuración' }).click();
+  await expect(page.getByRole('heading', { name: 'Configuración de grupo' })).toBeVisible();
+  await expect(page.getByRole('radio', { name: 'Cool' })).toHaveCount(0);
+  await page.getByRole('textbox', { name: 'Nueva categoría' }).fill('Planes');
+  await page.getByRole('button', { name: 'Añadir categoría' }).click();
+  await expect(page.getByText('Planes', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Nueva plantilla' }).click();
+  await page.getByRole('textbox', { name: 'Nombre de plantilla' }).fill('Organizar salida');
+  await page.getByRole('button', { name: 'Planes' }).click();
+  await page.getByRole('button', { name: 'Guardar plantilla' }).click();
+  await expect(page.getByText('Organizar salida')).toBeVisible();
 });

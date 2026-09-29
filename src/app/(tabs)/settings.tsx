@@ -182,12 +182,11 @@ export default function Settings() {
           {g.categories.map((c) => (
             <View key={c} style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Chip label={c} />
-              {owner && <Button label="×" variant="ghost" onPress={() => setRemove(`category:${c}`)} />}
+              <Button label="×" variant="ghost" onPress={() => setRemove(`category:${c}`)} />
             </View>
           ))}
         </View>
-        {owner && (
-          <>
+        <>
             <Field
               label={t('Nueva categoría', 'New category')}
               value={category}
@@ -202,8 +201,7 @@ export default function Settings() {
                 if (await app.execute({ type: 'category', title: category })) setCategory('');
               }}
             />
-          </>
-        )}
+        </>
         {g.templates.map((tp) => (
           <View key={tp.id} style={s.between}>
             <View style={{ flex: 1 }}>
@@ -212,24 +210,21 @@ export default function Settings() {
                 {tp.category} · {tp.points} pt
               </Txt>
             </View>
-            {owner && (
               <View style={s.row}>
                 <Button label={t('Editar', 'Edit')} variant="ghost" onPress={() => setEdit(tp)} />
                 <Button label={t('Quitar', 'Remove')} variant="ghost" onPress={() => setRemove(`template:${tp.id}`)} />
               </View>
-            )}
           </View>
         ))}
-        {owner && (
           <Button
             label={t('Nueva plantilla', 'New template')}
             variant="secondary"
+            disabled={g.categories.length === 0}
             onPress={() =>
               setEdit({ id: Crypto.randomUUID(), title: '', category: g.categories[0], points: 15 })
             }
           />
-        )}
-        {edit && owner && (
+        {edit && (
           <View style={{ gap: 12 }}>
             <Field
               label={t('Nombre de plantilla', 'Template name')}
@@ -293,7 +288,7 @@ export default function Settings() {
         onPress={() => run(app.exit)}
       />
       <Txt style={{ textAlign: 'center', fontSize: 12, color: colors.muted }}>
-        Family Points · 0.1.7
+        Family Points · 0.1.8
       </Txt>
     </Page>
   );

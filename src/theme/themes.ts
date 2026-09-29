@@ -1,4 +1,4 @@
-export type ThemeId = 'pop' | 'calm' | 'night' | 'cool';
+export type ThemeId = 'pop' | 'calm' | 'night';
 export type Palette = {
   bg: string;
   ink: string;
@@ -121,23 +121,7 @@ export const themes: Record<ThemeId, Theme> = {
       waitingBg: '#413B25',
     },
   },
-  cool: {
-    id: 'cool',
-    name: ['Cool', 'Cool'],
-    description: ['Azul eléctrico, violeta y un toque de sol.', 'Electric blue, violet and a little sunshine.'],
-    dark: false,
-    radius: 20,
-    titleSize: 35,
-    borderWidth: 1.5,
-    colors: {
-      bg: '#EAF3FF', ink: '#132A68', muted: '#5A6C99', green: '#2456F5',
-      mint: '#D8E7FF', line: '#B9CCFF', white: '#FFFFFF', orange: '#A96700',
-      peach: '#FFF2C7', red: '#BD3659', onPrimary: '#FFFFFF', heroMuted: '#C9DEFF',
-      placeholder: '#6577A3', positive: '#156A56', negative: '#B52E56',
-      waiting: '#886100', positiveBg: '#D6F6E9', negativeBg: '#FFE1E9', waitingBg: '#FFF2C2',
-    },
-  },
 };
 export function isThemeId(value: unknown): value is ThemeId {
-  return value === 'pop' || value === 'calm' || value === 'night' || value === 'cool';
+  return value === 'pop' || value === 'calm' || value === 'night';
 }

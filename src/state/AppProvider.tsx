@@ -221,7 +221,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           const p = JSON.parse(prefs);
           setLang(p.language === 'en' ? 'en' : 'es');
           setHum(p.humor !== false);
-          if (p.themeId === 'club') setThemeId('cool');
+          if (p.themeId === 'club' || p.themeId === 'cool') setThemeId('pop');
           else if (isThemeId(p.themeId)) setThemeId(p.themeId);
         }
         if (result?.error) throw result.error;

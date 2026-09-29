@@ -107,12 +107,15 @@ describe('group agreements', () => {
     g = vote(g, 'sam');
     expect(balance(g, 'alex').earned).toBe(60);
   });
-  it('lets the owner remove suggestions and unused categories, but protects pending members', () => {
+  it('lets any member edit suggestions and categories, but protects member removal', () => {
     let g = createDemo('es');
-    expect(() => applyCommand(g, 'sam', { type: 'remove_template', id: 'template-0' })).toThrow('owner_only');
-    expect(() => applyCommand(g, 'alex', { type: 'remove_category', title: g.categories[0] })).toThrow('category_in_use');
-    g = applyCommand(g, 'alex', { type: 'remove_template', id: 'template-0' });
-    g = applyCommand(g, 'alex', { type: 'remove_category', title: g.categories[0] });
+    expect(() => applyCommand(g, 'sam', { type: 'remove_member', id: 'alex' })).toThrow('owner_only');
+    expect(() => applyCommand(g, 'sam', { type: 'remove_category', title: g.categories[0] })).toThrow('category_in_use');
+    g = applyCommand(g, 'sam', { type: 'remove_template', id: 'template-0' });
+    g = applyCommand(g, 'sam', { type: 'remove_category', title: g.categories[0] });
+    g = applyCommand(g, 'sam', { type: 'category', title: 'Planes' });
+    g = applyCommand(g, 'sam', { type: 'template', id: 'plans', title: 'Organizar salida', category: 'Planes', points: 12 });
+    expect(g.templates.find((tp) => tp.id === 'plans')?.points).toBe(12);
     expect(g.templates.some((tp) => tp.id === 'template-0')).toBe(false);
     expect(g.categories).not.toContain('Cocina');
     g = applyCommand(g, 'alex', { ...command, category: g.categories[0], templateId: undefined });

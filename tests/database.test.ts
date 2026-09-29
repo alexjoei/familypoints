@@ -198,12 +198,15 @@ describe('PostgreSQL RPC and permission integration', () => {
     g = await act(id, 1, vote('c'));
     expect(balance(g, people[0]).earned).toBe(40);
   });
-  it('limits removal of members, categories and suggestions to the owner', async () => {
+  it('lets members edit categories and suggestions while only the owner removes people', async () => {
     const id = await makeGroup(2);
-    await expect(act(id, 1, { type: 'remove_template', id: 'template-0' })).rejects.toThrow('owner_only');
-    await expect(act(id, 0, { type: 'remove_category', title: 'Cocina' })).rejects.toThrow('category_in_use');
-    let g = await act(id, 0, { type: 'remove_template', id: 'template-0' });
-    g = await act(id, 0, { type: 'remove_category', title: 'Cocina' });
+    await expect(act(id, 1, { type: 'remove_member', id: people[0] })).rejects.toThrow('owner_only');
+    await expect(act(id, 1, { type: 'remove_category', title: 'Cocina' })).rejects.toThrow('category_in_use');
+    let g = await act(id, 1, { type: 'remove_template', id: 'template-0' });
+    g = await act(id, 1, { type: 'remove_category', title: 'Cocina' });
+    g = await act(id, 1, { type: 'category', title: 'Planes' });
+    g = await act(id, 1, { type: 'template', id: 'plans', title: 'Organizar salida', category: 'Planes', points: 12 });
+    expect(g.templates.some((tp) => tp.id === 'plans')).toBe(true);
     expect(g.categories).not.toContain('Cocina');
     await act(id, 0, { ...contribution(), category: g.categories[0], templateId: null });
     await expect(act(id, 0, { type: 'remove_member', id: people[1] })).rejects.toThrow('pending_requests');
@@ -336,7 +339,7 @@ describe('PostgreSQL RPC and permission integration', () => {
     const readableCode = `${shortCode.slice(0, 4)}-${shortCode.slice(4, 8)} ${shortCode.slice(8)}`;
     const joined = await db.query<{ group_id: string }>("select fp_join_group($1,'Other') group_id", [readableCode]);
     expect(joined.rows[0].group_id).toBe(id);
-    await expect(act(id, 1, { type: 'category', title: 'Travel' })).rejects.toThrow('owner_only');
+    await expect(act(id, 1, { type: 'remove_member', id: people[0] })).rejects.toThrow('owner_only');
   });
   it('rejects invalid dates, decimal points and blank titles', async () => {
     const id = await makeGroup();
