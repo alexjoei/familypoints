@@ -23,6 +23,9 @@ export function notificationForEvent(
   const proposal = group.proposals.find((p) => p.id === event.proposalId);
   const name = group.members.find((m) => m.id === event.actor)?.name ?? (language === 'es' ? 'Alguien' : 'Someone');
   const es = language === 'es';
+  if (prefs.decisions && event.type === 'granted' && proposal?.author === actor) {
+    return { id: event.id, title: es ? 'Te han otorgado puntos' : 'You got points', body: es ? `${name} te dio ${event.points} puntos por ${event.title}.` : `${name} gave you ${event.points} points for ${event.title}.`, proposalId: proposal.id };
+  }
   if (proposal) {
     if (prefs.requests && ['submitted', 'resubmitted'].includes(event.type) && proposal.electorate.includes(actor)) {
       return { id: event.id, title: es ? 'Te toca decidir' : 'Your call', body: es ? `${name} quiere ${proposal.kind === 'redemption' ? 'canjear' : 'sumar'} ${event.points} puntos por ${event.title}. Revisa y acepta o rechaza.` : `${name} wants to ${proposal.kind === 'redemption' ? 'redeem' : 'add'} ${event.points} points for ${event.title}. Review and decide.`, proposalId: proposal.id };

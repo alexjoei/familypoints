@@ -20,7 +20,8 @@ export default function TabLayout() {
           paddingTop: 6,
           paddingBottom: Math.max(insets.bottom, 8),
         },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+          tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+          tabBarItemStyle: { paddingHorizontal: 0 },
       }}
     >
       <Tabs.Screen
@@ -55,8 +56,8 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: t('Configuración', 'Settings'),
-          tabBarItemStyle: { flex: 1.4 },
-          tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
+          tabBarItemStyle: { flex: 1.35, paddingHorizontal: 0 },
+          tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
           tabBarIcon: ({ color }) => <Icon name="people-outline" color={color} />,
         }}
       />

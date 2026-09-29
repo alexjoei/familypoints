@@ -65,6 +65,7 @@ export default function Home() {
           variant="secondary"
           onPress={() => router.push('/(tabs)/rewards')}
         />
+        <Button label={t('Otorgar puntos', 'Give points')} icon="heart-outline" variant="secondary" onPress={() => router.push('/grant')} />
       </View>
       {!app.demo && app.actor === g.owner && (
         <Card style={{ backgroundColor: colors.mint }}>

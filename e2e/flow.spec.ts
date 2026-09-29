@@ -17,18 +17,34 @@ test('a contribution can include a photo visible to the group', async ({ page })
   await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
   await page.getByRole('button', { name: 'Sumar puntos', exact: true }).first().click();
   await page.getByRole('textbox', { name: '¿Qué has hecho?' }).fill('Montar la mesa');
+  await page.getByRole('button', { name: 'Más opciones' }).click();
   await page.getByRole('button', { name: /Cambiar fecha/ }).click();
   const now = new Date();
   const chosenDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getDate() === 15 ? '14' : '15'}`;
   await page.getByRole('button', { name: chosenDate }).click();
   await expect(page.getByRole('button', { name: /Cambiar fecha/ })).not.toContainText('Hoy');
   const chooser = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: 'Añadir foto (opcional)' }).click();
+  await page.getByRole('button', { name: 'Añadir foto' }).click();
   await (await chooser).setFiles('assets/icon.png');
   await expect(page.getByRole('button', { name: 'Cambiar foto' })).toBeVisible();
-  await page.getByRole('button', { name: 'Pedir que acepten mis puntos' }).click();
+  await page.getByRole('button', { name: 'Solicitar puntos' }).click();
   const card = page.getByText('Montar la mesa', { exact: true }).filter({ visible: true }).locator('..');
   await expect(card.locator('img')).toBeVisible();
+});
+test('quick add uses suggestion text without requiring a category', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
+  await page.getByRole('button', { name: 'Sumar puntos', exact: true }).first().click();
+  await page.getByRole('textbox', { name: '¿Qué has hecho?' }).focus();
+  await page.getByRole('button', { name: 'Preparar una cena' }).click();
+  await expect(page.getByRole('textbox', { name: '¿Qué has hecho?' })).toHaveValue('Preparar una cena');
+  await page.getByRole('button', { name: 'Solicitar puntos' }).click();
+  await page.getByRole('tab', { name: 'Historial' }).click();
+  await expect(page.getByText('Preparar una cena', { exact: true }).first()).toBeVisible();
+  await page.getByRole('tab', { name: 'Configuración' }).click();
+  await page.getByRole('button', { name: 'Quitar sugerencia Preparar una cena' }).click();
+  await page.getByRole('tab', { name: 'Historial' }).click();
+  await expect(page.getByText('Preparar una cena', { exact: true }).first()).toBeVisible();
 });
 
 test('group shows member balances and votes on the negative balance limit', async ({ page }) => {
@@ -61,8 +77,8 @@ test('mobile demo: create, reach majority, redeem, persist and change language',
   await page.screenshot({ path: 'artifacts/home-mobile.png', fullPage: true });
   await page.getByRole('button', { name: 'Sumar puntos', exact: true }).first().click();
   await page.getByRole('textbox', { name: '¿Qué has hecho?' }).fill('Organizar una escapada');
-  await page.getByRole('textbox', { name: 'Puntos propuestos' }).fill('20');
-  await page.getByRole('button', { name: 'Pedir que acepten mis puntos' }).click();
+  await page.getByRole('textbox', { name: '¿Cuántos puntos?' }).fill('20');
+  await page.getByRole('button', { name: 'Solicitar puntos' }).click();
   await expect(
     page.getByText('Organizar una escapada', { exact: true }).filter({ visible: true }),
   ).toBeVisible();

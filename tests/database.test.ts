@@ -125,6 +125,27 @@ afterAll(async () => {
   await db?.close();
 });
 describe('PostgreSQL RPC and permission integration', () => {
+  it('credits direct grants immediately without spending the giver balance or allowing self-grants', async () => {
+    const id = await makeGroup(2);
+    const command = { type: 'grant', id: 'gift-1', recipient: people[1], title: 'Por ayudarme', points: 25 };
+    const key = randomUUID();
+    let g = await act(id, 0, command, key);
+    expect(g.proposals.find((p) => p.id === 'gift-1')).toMatchObject({ kind: 'grant', author: people[1], grantedBy: people[0], status: 'approved', electorate: [] });
+    expect(balance(g, people[1]).available).toBe(25);
+    expect(balance(g, people[0]).available).toBe(0);
+    g = await act(id, 0, command, key);
+    expect(balance(g, people[1]).available).toBe(25);
+    await expect(act(id, 0, { ...command, id: 'self', recipient: people[0] })).rejects.toThrow('not_allowed');
+    await expect(act(id, 0, { ...command, id: 'outsider', recipient: people[3] })).rejects.toThrow('not_allowed');
+  });
+  it('accepts a quick contribution without a category or linked suggestion', async () => {
+    const id = await makeGroup(2);
+    let g = await act(id, 0, { ...contribution(), category: '', templateId: undefined });
+    expect(g.proposals[0].category).toBe('');
+    expect(g.proposals[0].templateId).toBeNull();
+    g = await act(id, 1, vote('c'));
+    expect(balance(g, people[0]).available).toBe(40);
+  });
   it('creates an isolated group with templates and expiring invitations', async () => {
     const id = await makeGroup();
     await as(0);

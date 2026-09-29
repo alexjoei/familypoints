@@ -90,6 +90,8 @@ test('a non-owner can add and remove categories and suggestions with one tap on 
   expect(settingsLabel).not.toBeNull();
   expect(settingsLabel!.x).toBeGreaterThanOrEqual(settingsTab!.x - 1);
   expect(settingsLabel!.x + settingsLabel!.width).toBeLessThanOrEqual(settingsTab!.x + settingsTab!.width + 1);
+  const fontSizes = await Promise.all(['Inicio', 'Configuración'].map((label) => page.getByText(label, { exact: true }).evaluate((el) => getComputedStyle(el).fontSize)));
+  expect(fontSizes[1]).toBe(fontSizes[0]);
   await expect(page.getByRole('radio', { name: 'Cool' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Añadir categoría' }).click();
   await page.getByRole('textbox', { name: 'Nombre de la categoría' }).fill('Planes');
@@ -112,6 +114,19 @@ test('a non-owner can add and remove categories and suggestions with one tap on 
   await expect(page.getByText('Otra salida')).toHaveCount(0);
   await page.getByRole('button', { name: 'Quitar categoría Cocina' }).click();
   await expect(page.getByText('Preparar una cena')).toHaveCount(0);
+});
+test('giving points credits the other person immediately without a vote', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
+  await page.getByRole('button', { name: 'Otorgar puntos' }).click();
+  await expect(page.getByText('Sam', { exact: true })).toBeVisible();
+  await page.getByRole('textbox', { name: '¿Por qué?' }).fill('Por salvar la cena');
+  await page.getByRole('textbox', { name: '¿Cuántos puntos?' }).fill('23');
+  await page.getByRole('button', { name: 'Otorgar puntos' }).click();
+  await page.getByRole('tab', { name: 'Historial' }).click();
+  await expect(page.getByText('23 puntos otorgados')).toBeVisible();
+  await page.getByRole('tab', { name: 'Configuración' }).click();
+  await expect(page.getByText('43 pt')).toBeVisible();
 });
 test('notification choices are personal and survive a reload', async ({ page }) => {
   await page.goto('/');

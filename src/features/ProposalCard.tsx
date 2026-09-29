@@ -36,6 +36,8 @@ export function ProposalCard({
       ? t('REGLA DEL GRUPO', 'GROUP RULE')
       : p.kind === 'contribution'
       ? t('SUMAR PUNTOS', 'ADD POINTS')
+      : p.kind === 'grant'
+      ? t('PUNTOS OTORGADOS', 'POINTS GIVEN')
       : p.kind === 'redemption'
         ? t('CANJE', 'REDEMPTION')
         : p.kind === 'reward_change'
@@ -112,12 +114,12 @@ export function ProposalCard({
         </Txt>
       )}
       <Txt style={s.muted}>
-        {author} · {new Date(`${p.date}T12:00:00`).toLocaleDateString(language)}
+        {p.kind === 'grant' ? t(`${g?.members.find((m) => m.id === p.grantedBy)?.name ?? 'Alguien'} dio estos puntos a ${author}`, `${g?.members.find((m) => m.id === p.grantedBy)?.name ?? 'Someone'} gave these points to ${author}`) : author} · {new Date(`${p.date}T12:00:00`).toLocaleDateString(language)}
         {p.category ? ` · ${p.category}` : ''}
       </Txt>
       {!!p.note && <Txt>{p.note}</Txt>}
       {photoUrl && <Image source={{ uri: photoUrl }} style={{ width: '100%', height: 190, borderRadius: 14 }} resizeMode="cover" />}
-      {!couple && <Txt style={{ fontSize: 13, fontWeight: '600' }}>
+      {!couple && p.kind !== 'grant' && <Txt style={{ fontSize: 13, fontWeight: '600' }}>
         {t(
           `${votes.filter((v) => v.choice === 'approve').length} de ${quorum(p.electorate)} aprobaciones`,
           `${votes.filter((v) => v.choice === 'approve').length} of ${quorum(p.electorate)} approvals`,
@@ -255,7 +257,7 @@ export function ProposalCard({
           )}
         </>
       )}
-      <VoterStates proposal={p} />
+      {p.kind !== 'grant' && <VoterStates proposal={p} />}
       {votes.filter((v) => v.choice === 'reject' && v.reason).map((v) => (
         <Txt key={v.actor} style={s.muted}>{g?.members.find((m) => m.id === v.actor)?.name}: {v.reason}</Txt>
       ))}
@@ -277,7 +279,7 @@ export function ProposalCard({
       {p.status !== 'pending' && (
         <Txt style={{ fontWeight: '600' }}>
           {p.status === 'approved'
-            ? t('Aprobada', 'Approved')
+            ? p.kind === 'grant' ? t('Otorgados al momento', 'Given instantly') : t('Aprobada', 'Approved')
             : p.status === 'rejected'
               ? t('Rechazada', 'Rejected')
               : t('Retirada', 'Withdrawn')}

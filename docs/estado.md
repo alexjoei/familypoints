@@ -97,3 +97,9 @@ La migración 010 se aplicó en Supabase. Una transacción con la identidad de u
 Se añadieron avisos para solicitudes que necesitan revisión, ajustes y decisiones sobre aportaciones o canjes, además de cambios del grupo opcionales. Cada persona puede elegir esos tres tipos por separado en Configuración; sus preferencias se guardan en el dispositivo por cuenta. Un aviso visible en cualquier pantalla enlaza al detalle de la solicitud. En Android, con permiso del sistema, también se muestra una notificación local cuando la app detecta un evento mientras está activa. El historial se comprueba cada 15 segundos y al volver a abrir la app. El envío push con la app cerrada sigue pendiente de credenciales FCM y de un servicio de envío: esta versión no promete avisos en segundo plano.
 
 TypeScript, lint, 56 pruebas y 11 recorridos web correctos. Expo Doctor: 21/21. Falta verificar los avisos del sistema y la instalación del APK en Android físico.
+
+## Cambios del 29 de septiembre — 0.1.12
+
+Inicio incluye «Otorgar puntos»: cualquier miembro puede conceder puntos nuevos a otro miembro sin descontarlos de su propio saldo ni pedir aprobación. Quedan registrados quién los otorgó, el motivo y la cantidad. «Sumar puntos» pide solo texto y cantidad; categoría, fecha, nota y foto están en «Más opciones». Al escribir el motivo aparecen hasta tres sugerencias del grupo, que solo copian el texto y no crean una dependencia con la sugerencia. La categoría puede quedar vacía. La pestaña «Configuración» usa el mismo tamaño de letra que las demás y conserva espacio suficiente en 320 px.
+
+La migración `202609290011_grants.sql` añade el otorgamiento directo al registro y al cálculo del saldo, y hace opcional la categoría de la aportación. Se añadieron pruebas de autorización, saldos, reintentos, formulario rápido, sugerencias y pestañas. Antes de publicar el APK deben aplicarse y comprobarse los cambios en Supabase real.

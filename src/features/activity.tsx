@@ -20,6 +20,7 @@ const labels: Record<string, [string, string]> = {
   category_removed: ['ha quitado una categoría', 'removed a category'],
   category_renamed: ['ha cambiado una categoría', 'renamed a category'],
   template_removed: ['ha quitado una sugerencia', 'removed a suggestion'],
+  granted: ['ha otorgado puntos por', 'gave points for'],
   member_removed: ['ha quitado a un miembro', 'removed a member'],
   reject_undone: ['ha deshecho su rechazo', 'undid a rejection'],
   group_created: ['ha creado el grupo', 'created the group'],
@@ -103,6 +104,8 @@ export function ActivityClusterRow({ cluster }: { cluster: ActivityCluster }) {
   const result = p.status === 'approved'
     ? p.kind === 'contribution'
       ? t(`${p.points} puntos sumados`, `${p.points} points added`)
+      : p.kind === 'grant'
+        ? t(`${p.points} puntos otorgados`, `${p.points} points given`)
       : p.kind === 'redemption'
         ? t(`${p.points} puntos canjeados`, `${p.points} points redeemed`)
         : t('Acordado', 'Agreed')

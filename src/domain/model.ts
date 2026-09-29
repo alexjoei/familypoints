@@ -1,5 +1,5 @@
 export type Language = 'es' | 'en';
-export type Kind = 'contribution' | 'reward' | 'redemption' | 'reward_change' | 'debt_limit';
+export type Kind = 'contribution' | 'grant' | 'reward' | 'redemption' | 'reward_change' | 'debt_limit';
 export type Status = 'pending' | 'approved' | 'rejected' | 'withdrawn';
 export type Member = { id: string; name: string };
 export type Template = { id: string; title: string; category: string; points: number };
@@ -9,6 +9,7 @@ export type Proposal = {
   id: string;
   kind: Kind;
   author: string;
+  grantedBy?: string;
   title: string;
   category: string;
   points: number;
@@ -48,6 +49,7 @@ export type Group = {
   activity: Activity[];
 };
 export type Command =
+  | { type: 'grant'; id: string; recipient: string; title: string; points: number }
   | {
       type: 'submit';
       id: string;
@@ -108,7 +110,7 @@ export function recordSeen(
 export function balance(group: Group, member: string) {
   const own = group.proposals.filter((p) => p.author === member);
   const earned = own
-    .filter((p) => p.kind === 'contribution' && p.status === 'approved')
+    .filter((p) => ['contribution', 'grant'].includes(p.kind) && p.status === 'approved')
     .reduce((n, p) => n + p.points, 0);
   const spent = own
     .filter((p) => p.kind === 'redemption' && p.status === 'approved')
@@ -233,6 +235,15 @@ export function applyCommand(
     event('template', t.title, t.points);
     return g;
   }
+  if (cmd.type === 'grant') {
+    requireThat(actor !== cmd.recipient && g.members.some((m) => m.id === cmd.recipient), 'not_allowed');
+    requireThat(!g.proposals.some((p) => p.id === cmd.id), 'duplicate');
+    validText(cmd.title);
+    validPoints(cmd.points);
+    g.proposals.push({ id: cmd.id, kind: 'grant', title: cmd.title.trim(), points: cmd.points, category: '', date: at.slice(0, 10), note: '', author: cmd.recipient, grantedBy: actor, status: 'approved', revision: 1, electorate: [], votes: [] });
+    event('granted', cmd.title.trim(), cmd.points, cmd.id);
+    return g;
+  }
   if (cmd.type === 'submit') {
     requireThat(!g.proposals.some((p) => p.id === cmd.id), 'duplicate');
     if (cmd.kind === 'debt_limit')
@@ -249,7 +260,7 @@ export function applyCommand(
     let points = cmd.points,
       title = cmd.title.trim();
     if (cmd.kind === 'contribution') {
-      requireThat(g.categories.includes(cmd.category), 'invalid_category');
+      requireThat(cmd.category !== null && (cmd.category === '' || g.categories.includes(cmd.category)), 'invalid_category');
       if (cmd.templateId)
         requireThat(
           g.templates.some((t) => t.id === cmd.templateId && t.category === cmd.category),
