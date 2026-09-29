@@ -186,7 +186,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const items = newer.map((e) => notificationForEvent(group, e, actor, language, notificationPreferences)).filter((e): e is PointNotification => !!e);
       if (items.length) {
         setNotice(items[items.length - 1]);
-        if (AppState.currentState === 'active') for (const item of items.slice(-3)) showPointNotification(item).catch(() => {});
+        // Live accounts receive the same event through Expo Push. Scheduling it
+        // locally as well displays two system notifications for one action.
+        if (demo && AppState.currentState === 'active') for (const item of items.slice(-3)) showPointNotification(item).catch(() => {});
       }
     };
     process().catch(() => {});
@@ -341,10 +343,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     notificationCursor.current = null;
     setNotice(null);
     if (session && supabase)
-      supabase.rpc('fp_my_groups').then(({ data, error }) => {
+      supabase.rpc('fp_my_groups').then(async ({ data, error }) => {
         if (generation !== epoch.current) return;
         if (error) report(error);
-        else setGroups(data as Summary[]);
+        else {
+          const available = data as Summary[];
+          setGroups(available);
+          const saved = await AsyncStorage.getItem(`fp.lastGroup.${session.user.id}`);
+          if (generation !== epoch.current || !saved || !available.some((item) => item.id === saved)) return;
+          const snapshot = await supabase!.rpc('fp_snapshot', { p_group: saved });
+          if (generation === epoch.current && !snapshot.error) setGroup(snapshot.data as Group);
+        }
+      }, (error: unknown) => {
+        if (generation === epoch.current) report(error);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user.id, demo]);
@@ -355,7 +366,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data, error } = await supabase.rpc('fp_snapshot', { p_group: id });
       if (error) throw error;
-      if (generation === epoch.current) setGroup(data as Group);
+      if (generation === epoch.current) {
+        setGroup(data as Group);
+        if (session?.user.id) await AsyncStorage.setItem(`fp.lastGroup.${session.user.id}`, id);
+      }
     } finally {
       setBusy(false);
     }
@@ -460,6 +474,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (busy) return;
     epoch.current++;
     if (!demo && supabase) {
+      if (session?.user.id) await AsyncStorage.removeItem(`fp.lastGroup.${session.user.id}`);
       if (pushTokenRef.current) supabase.rpc('fp_unregister_push_token', { p_token: pushTokenRef.current }).then(undefined, () => {});
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
@@ -500,6 +515,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     groupRef.current = null;
     setGroup(null);
     setGroups((old) => old.filter((g) => g.id !== id));
+    if (session?.user.id) await AsyncStorage.removeItem(`fp.lastGroup.${session.user.id}`);
   }
   async function openGroups() {
     if (demo || !supabase || busy) return;

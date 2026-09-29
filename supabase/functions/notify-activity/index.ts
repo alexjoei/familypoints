@@ -133,9 +133,20 @@ Deno.serve(async (req) => {
     const messages = (tokenRows ?? [])
       .map((t: { user_id: string; token: string }) => {
         const copy = copyByRecipient.get(t.user_id);
-        return copy && { to: t.token, title: copy.title, body: copy.body, sound: 'default', data: { proposalId: event.proposalId ?? '' } };
+        return copy && { to: t.token, title: copy.title, body: copy.body, sound: 'default', data: { proposalId: event.proposalId ?? '', eventId } };
       })
-      .filter(Boolean);
+      .filter(Boolean)
+      .filter((message, index, all) => all.findIndex((other) => other?.to === message?.to) === index);
+    if (!messages.length) return new Response(JSON.stringify({ sent: 0 }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+
+    // The unique database claim is atomic across concurrent requests. Do not
+    // release it after a partial send: a retry could duplicate earlier pushes.
+    const { data: claimed, error: claimError } = await asService.rpc('fp_claim_push_event', {
+      p_group: groupId,
+      p_event: eventId,
+    });
+    if (claimError) throw claimError;
+    if (!claimed) return new Response(JSON.stringify({ sent: 0, duplicate: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     for (let i = 0; i < messages.length; i += 100) {
       const response = await fetch('https://exp.host/--/api/v2/push/send', {
         method: 'POST',

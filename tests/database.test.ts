@@ -113,7 +113,7 @@ describe('read receipt permissions', () => {
 beforeAll(async () => {
   db = new PGlite();
   await db.exec(
-    "create role anon; create role authenticated; create schema auth; create table auth.users(id uuid primary key); create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$; grant usage on schema auth to authenticated; create schema storage; create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]); create table storage.objects(bucket_id text,name text,owner_id text); alter table storage.objects enable row level security; grant usage on schema storage to authenticated; grant select,insert,update,delete on storage.objects to authenticated;",
+    "create role anon; create role authenticated; create role service_role; create schema auth; create table auth.users(id uuid primary key); create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$; grant usage on schema auth to authenticated; create schema storage; create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]); create table storage.objects(bucket_id text,name text,owner_id text); alter table storage.objects enable row level security; grant usage on schema storage to authenticated; grant select,insert,update,delete on storage.objects to authenticated;",
   );
   for (const id of people) await db.query('insert into auth.users values ($1)', [id]);
   for (const file of (await readdir('supabase/migrations'))
@@ -125,6 +125,24 @@ afterAll(async () => {
   await db?.close();
 });
 describe('PostgreSQL RPC and permission integration', () => {
+  it('claims a push event only once and blocks regular members from claiming it', async () => {
+    const group = randomUUID();
+    await db.exec('set role service_role');
+    try {
+      const first = await db.query<{ claimed: boolean }>('select fp_claim_push_event($1,$2) claimed', [group, 'event-1']);
+      const second = await db.query<{ claimed: boolean }>('select fp_claim_push_event($1,$2) claimed', [group, 'event-1']);
+      expect(first.rows[0].claimed).toBe(true);
+      expect(second.rows[0].claimed).toBe(false);
+    } finally {
+      await db.exec('reset role');
+    }
+    await db.exec('set role authenticated');
+    try {
+      await expect(db.query('select fp_claim_push_event($1,$2)', [group, 'event-2'])).rejects.toThrow('permission denied');
+    } finally {
+      await db.exec('reset role');
+    }
+  });
   it('credits direct grants immediately without spending the giver balance or allowing self-grants', async () => {
     const id = await makeGroup(2);
     const command = { type: 'grant', id: 'gift-1', recipient: people[1], title: 'Por ayudarme', points: 25 };

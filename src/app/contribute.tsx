@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Image, View } from 'react-native';
+import { Image, KeyboardAvoidingView, Platform, View } from 'react-native';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import * as Crypto from 'expo-crypto';
 import { Button, Card, Chip, Field, Page, Txt, useUi } from '../components/ui';
@@ -8,7 +8,7 @@ import { chooseContributionPhoto, uploadContributionPhoto } from '../lib/contrib
 import { DatePicker } from '../components/DatePicker';
 
 export default function Contribute() {
-  const { s } = useUi();
+  const { s, colors } = useUi();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { group: g, actor, demo, execute, busy, t, report } = useApp();
   const existing = g?.proposals.find((p) => p.id === id);
@@ -37,7 +37,7 @@ export default function Contribute() {
     } catch (e) { report(e); }
     finally { setSending(false); }
   };
-  return (
+  return <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <Page
       title={existing ? t('Vamos con otra versión', 'Let’s give it another go') : t('Sumar puntos', 'Add points')}
       subtitle={t('Cuenta qué hiciste y pide esos puntos. Tu pareja o grupo los acepta después.', 'Say what you did and ask for the points. Your partner or group accepts them later.')}
@@ -50,7 +50,6 @@ export default function Contribute() {
           <View style={s.wrap}>{ideas.map((idea) => <Chip key={idea.id} label={idea.title} selected={false} onPress={() => { setTitle(idea.title); setShowIdeas(false); }} />)}</View>
         </View>}
         <Field label={t('¿Cuántos puntos?', 'How many points?')} value={points} onChangeText={setPoints} keyboardType="number-pad" />
-        <Button label={existing ? t('Reenviar solicitud', 'Resubmit request') : t('Solicitar puntos', 'Request points')} loading={busy || sending} disabled={!title.trim() || !Number.isInteger(Number(points)) || Number(points) < 1 || Number(points) > 100000} onPress={send} />
       </Card>
       <Button label={t(more ? 'Ocultar opciones' : 'Más opciones', more ? 'Hide options' : 'More options')} variant="ghost" icon={more ? 'chevron-up' : 'chevron-down'} onPress={() => setMore(!more)} />
       {more && <Card>
@@ -68,5 +67,8 @@ export default function Contribute() {
       </Card>}
       <Txt style={s.muted}>{t('Los puntos se suman cuando el resto acepta la solicitud.', 'Points are added when the others accept your request.')}</Txt>
     </Page>
-  );
+    <View style={{ paddingHorizontal: 22, paddingVertical: 10, backgroundColor: colors.bg }}>
+      <Button label={existing ? t('Reenviar solicitud', 'Resubmit request') : t('Solicitar puntos', 'Request points')} loading={busy || sending} disabled={!title.trim() || !Number.isInteger(Number(points)) || Number(points) < 1 || Number(points) > 100000} onPress={send} />
+    </View>
+  </KeyboardAvoidingView>;
 }
