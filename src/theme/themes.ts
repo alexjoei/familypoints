@@ -1,4 +1,4 @@
-export type ThemeId = 'pop' | 'calm' | 'night' | 'club';
+export type ThemeId = 'pop' | 'calm' | 'night' | 'cool';
 export type Palette = {
   bg: string;
   ink: string;
@@ -121,23 +121,23 @@ export const themes: Record<ThemeId, Theme> = {
       waitingBg: '#413B25',
     },
   },
-  club: {
-    id: 'club',
-    name: ['Club', 'Club'],
-    description: ['Rosa eléctrico, azul noche y actitud.', 'Electric pink, midnight blue, and attitude.'],
-    dark: true,
-    radius: 16,
-    titleSize: 36,
+  cool: {
+    id: 'cool',
+    name: ['Cool', 'Cool'],
+    description: ['Azul eléctrico, violeta y un toque de sol.', 'Electric blue, violet and a little sunshine.'],
+    dark: false,
+    radius: 20,
+    titleSize: 35,
     borderWidth: 1.5,
     colors: {
-      bg: '#141329', ink: '#FFF8FE', muted: '#C3B7CE', green: '#FF5C9A',
-      mint: '#332244', line: '#574663', white: '#211D38', orange: '#FFD16C',
-      peach: '#403046', red: '#FF8A9C', onPrimary: '#211327', heroMuted: '#39264F',
-      placeholder: '#B4A8BE', positive: '#A8F5C3', negative: '#FF9FAF',
-      waiting: '#FFE092', positiveBg: '#254839', negativeBg: '#542E46', waitingBg: '#51442A',
+      bg: '#EAF3FF', ink: '#132A68', muted: '#5A6C99', green: '#2456F5',
+      mint: '#D8E7FF', line: '#B9CCFF', white: '#FFFFFF', orange: '#A96700',
+      peach: '#FFF2C7', red: '#BD3659', onPrimary: '#FFFFFF', heroMuted: '#C9DEFF',
+      placeholder: '#6577A3', positive: '#156A56', negative: '#B52E56',
+      waiting: '#886100', positiveBg: '#D6F6E9', negativeBg: '#FFE1E9', waitingBg: '#FFF2C2',
     },
   },
 };
 export function isThemeId(value: unknown): value is ThemeId {
-  return value === 'pop' || value === 'calm' || value === 'night' || value === 'club';
+  return value === 'pop' || value === 'calm' || value === 'night' || value === 'cool';
 }

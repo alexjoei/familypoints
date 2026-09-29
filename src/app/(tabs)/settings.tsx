@@ -14,6 +14,7 @@ export default function Settings() {
     [edit, setEdit] = useState<Template | null>(null),
     [debtForm, setDebtForm] = useState(false),
     [debtValue, setDebtValue] = useState('100'),
+    [remove, setRemove] = useState<string | null>(null),
     [working, setWorking] = useState(false);
   if (!g) return null;
   const run = async (fn: () => Promise<unknown>) => {
@@ -29,49 +30,15 @@ export default function Settings() {
   const owner = app.actor === g.owner;
   return (
     <Page
-      title={g.name}
+      title={t('Configuración de grupo', 'Group settings')}
       subtitle={t(
         'Tu grupo. Vuestras reglas. Cero solemnidad.',
         'Your crew. Your rules. Zero ceremony.',
       )}
     >
-      {app.actor === g.owner && !app.demo && (
-        <Card style={{ backgroundColor: colors.mint }}>
-          <Txt style={s.subtitle}>{t('Compartir grupo', 'Share group')}</Txt>
-          <Txt>{t('Tu código de invitación, a un toque.', 'Your invitation code, one tap away.')}</Txt>
-          <Button
-            label={t('Compartir grupo', 'Share group')}
-            icon="share-social-outline"
-            onPress={() => router.push('/share')}
-          />
-        </Card>
-      )}
-      <ThemePicker />
-      {app.demo && (
-        <Card style={{ backgroundColor: colors.peach }}>
-          <Txt style={{ fontWeight: '700' }}>
-            {t('Modo prueba: sin líos', 'Demo mode: no strings')}
-          </Txt>
-          <Txt>
-            {t(
-              'Los datos se guardan solo aquí. Cambia de persona para probar los votos.',
-              'Data is saved only here. Switch people to try voting.',
-            )}
-          </Txt>
-          <View style={s.wrap}>
-            {g.members.map((m) => (
-              <Chip
-                key={m.id}
-                label={m.name}
-                selected={m.id === app.actor}
-                onPress={() => app.switchActor(m.id)}
-              />
-            ))}
-          </View>
-        </Card>
-      )}
       <Card>
-        <Txt style={s.subtitle}>{t('Miembros', 'Members')}</Txt>
+        <Txt style={s.subtitle}>{g.name}</Txt>
+        <Txt style={s.muted}>{t('Miembros y puntos acumulados', 'Members and accumulated points')}</Txt>
         {g.members.map((m) => (
           <View style={s.between} key={m.id}>
             <View style={{ flex: 1 }}>
@@ -90,9 +57,30 @@ export default function Settings() {
                 </Txt>
               )}
             </View>
+            {owner && m.id !== g.owner && (
+              <Button label={t('Quitar', 'Remove')} variant="ghost" onPress={() => setRemove(m.id)} />
+            )}
           </View>
         ))}
+        {remove && !remove.includes(':') && (
+          <View style={{ gap: 8, padding: 12, backgroundColor: colors.negativeBg, borderRadius: 14 }}>
+            <Txt>{t(`¿Quitar a ${g.members.find((m) => m.id === remove)?.name}? Su historial seguirá visible. Resolved primero las solicitudes pendientes.`, `Remove ${g.members.find((m) => m.id === remove)?.name}? Their history stays visible. Resolve pending requests first.`)}</Txt>
+            <Button label={t('Confirmar', 'Confirm')} disabled={app.busy || g.proposals.some((p) => p.status === 'pending')} onPress={async () => {
+              if (await app.execute({ type: 'remove_member', id: remove })) setRemove(null);
+            }} />
+            <Button label={t('Cancelar', 'Cancel')} variant="ghost" onPress={() => setRemove(null)} />
+          </View>
+        )}
+        {owner && !app.demo && <Button label={t('Compartir grupo y código', 'Share group and code')} icon="share-social-outline" onPress={() => router.push('/share')} />}
       </Card>
+      {app.demo && (
+        <Card style={{ backgroundColor: colors.peach }}>
+          <Txt style={{ fontWeight: '700' }}>{t('Modo prueba: sin líos', 'Demo mode: no strings')}</Txt>
+          <Txt>{t('Cambia de persona para probar los votos. Estos datos se guardan solo aquí.', 'Switch people to try voting. This data stays on this device.')}</Txt>
+          <View style={s.wrap}>{g.members.map((m) => <Chip key={m.id} label={m.name} selected={m.id === app.actor} onPress={() => app.switchActor(m.id)} />)}</View>
+        </Card>
+      )}
+      <ThemePicker />
       <Card>
         <Txt style={s.subtitle}>{t('Nuestros acuerdos', 'Our agreements')}</Txt>
         <Txt>
@@ -192,7 +180,10 @@ export default function Settings() {
         <Txt style={s.subtitle}>{t('Categorías y sugerencias', 'Categories and suggestions')}</Txt>
         <View style={s.wrap}>
           {g.categories.map((c) => (
-            <Chip key={c} label={c} />
+            <View key={c} style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Chip label={c} />
+              {owner && <Button label="×" variant="ghost" onPress={() => setRemove(`category:${c}`)} />}
+            </View>
           ))}
         </View>
         {owner && (
@@ -222,7 +213,10 @@ export default function Settings() {
               </Txt>
             </View>
             {owner && (
-              <Button label={t('Editar', 'Edit')} variant="ghost" onPress={() => setEdit(tp)} />
+              <View style={s.row}>
+                <Button label={t('Editar', 'Edit')} variant="ghost" onPress={() => setEdit(tp)} />
+                <Button label={t('Quitar', 'Remove')} variant="ghost" onPress={() => setRemove(`template:${tp.id}`)} />
+              </View>
             )}
           </View>
         ))}
@@ -269,6 +263,20 @@ export default function Settings() {
             <Button label={t('Cancelar', 'Cancel')} variant="ghost" onPress={() => setEdit(null)} />
           </View>
         )}
+        {remove?.startsWith('category:') && <View style={{ gap: 8 }}>
+          <Txt>{t('¿Quitar esta categoría? Primero quita sus sugerencias.', 'Remove this category? Remove its suggestions first.')}</Txt>
+          <Button label={t('Quitar categoría', 'Remove category')} disabled={app.busy || g.templates.some((tp) => tp.category === remove.slice(9))} onPress={async () => {
+            if (await app.execute({ type: 'remove_category', title: remove.slice(9) })) setRemove(null);
+          }} />
+          <Button label={t('Cancelar', 'Cancel')} variant="ghost" onPress={() => setRemove(null)} />
+        </View>}
+        {remove?.startsWith('template:') && <View style={{ gap: 8 }}>
+          <Txt>{t('¿Quitar esta sugerencia? Las aportaciones anteriores seguirán en el historial.', 'Remove this suggestion? Past contributions stay in history.')}</Txt>
+          <Button label={t('Quitar sugerencia', 'Remove suggestion')} disabled={app.busy} onPress={async () => {
+            if (await app.execute({ type: 'remove_template', id: remove.slice(9) })) setRemove(null);
+          }} />
+          <Button label={t('Cancelar', 'Cancel')} variant="ghost" onPress={() => setRemove(null)} />
+        </View>}
       </Card>
       {!app.demo && (
         <Button
@@ -285,7 +293,7 @@ export default function Settings() {
         onPress={() => run(app.exit)}
       />
       <Txt style={{ textAlign: 'center', fontSize: 12, color: colors.muted }}>
-        Family Points · 0.1.6
+        Family Points · 0.1.7
       </Txt>
     </Page>
   );

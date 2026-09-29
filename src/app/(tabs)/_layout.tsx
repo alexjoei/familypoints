@@ -54,7 +54,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: t('Grupo', 'Group'),
+          title: t('Config. grupo', 'Group settings'),
           tabBarIcon: ({ color }) => <Icon name="people-outline" color={color} />,
         }}
       />

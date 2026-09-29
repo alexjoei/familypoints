@@ -13,7 +13,7 @@ export default function Pending() {
       .reverse() ?? [];
   return (
     <Page
-      title={t('Aceptar puntos', 'Accept points')}
+      title={t('Solicitudes pendientes', 'Pending requests')}
       subtitle={t(
         group?.members.length === 2
           ? 'Aquí decidís entre los dos: acepta, rechaza o propón otros puntos.'

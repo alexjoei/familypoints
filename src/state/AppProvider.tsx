@@ -52,8 +52,8 @@ const errorCopy: Record<string, [string, string]> = {
     'Check the text: it cannot be empty or too long.',
   ],
   invalid_note: [
-    'La nota admite hasta 1.000 caracteres.',
-    'Notes can have up to 1,000 characters.',
+    'La nota o el motivo son demasiado largos.',
+    'The note or reason is too long.',
   ],
   invalid_date: ['Usa una fecha válida: AAAA-MM-DD.', 'Use a valid date: YYYY-MM-DD.'],
   insufficient_balance: [
@@ -90,6 +90,8 @@ const errorCopy: Record<string, [string, string]> = {
   not_allowed: ['Esta acción no está disponible.', 'This action is not available.'],
   duplicate: ['Ya existe. Actualiza para comprobarlo.', 'Already exists. Refresh to check.'],
   invalid_category: ['Selecciona una categoría del grupo.', 'Choose a group category.'],
+  category_in_use: ['Quita primero las sugerencias de esa categoría.', 'Remove this category’s suggestions first.'],
+  pending_requests: ['Resuelve primero las solicitudes pendientes.', 'Resolve pending requests first.'],
   invalid_template: [
     'La plantilla ha cambiado. Selecciónala de nuevo.',
     'The template changed. Select it again.',
@@ -219,7 +221,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           const p = JSON.parse(prefs);
           setLang(p.language === 'en' ? 'en' : 'es');
           setHum(p.humor !== false);
-          if (isThemeId(p.themeId)) setThemeId(p.themeId);
+          if (p.themeId === 'club') setThemeId('cool');
+          else if (isThemeId(p.themeId)) setThemeId(p.themeId);
         }
         if (result?.error) throw result.error;
         if (result) setSession(result.data.session);
@@ -287,7 +290,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (demo || !current || !supabase) return;
     const generation = epoch.current;
     const { data, error } = await supabase.rpc('fp_snapshot', { p_group: current.id });
-    if (error) throw error;
+    if (error) {
+      if (error.message.includes('not_member') && generation === epoch.current) {
+        groupRef.current = null;
+        setGroup(null);
+        const remaining = await supabase.rpc('fp_my_groups');
+        if (!remaining.error) setGroups(remaining.data as Summary[]);
+      }
+      throw error;
+    }
     if (generation === epoch.current && !locked.current) setGroup(data as Group);
   }
   useEffect(() => {

@@ -94,6 +94,34 @@ describe('group agreements', () => {
     expect(balance(g, 'alex').available).toBe(40);
     expect(g.proposals.find((p) => p.id === 'new')?.revision).toBe(2);
   });
+  it('undoes a rejection without erasing its history or reason', () => {
+    let g = applyCommand(createDemo('es'), 'alex', command);
+    g = applyCommand(g, 'sam', { type: 'vote', id: 'new', revision: 1, choice: 'reject', reason: 'Hablemos de la cantidad' });
+    expect(g.proposals.find((p) => p.id === 'new')?.status).toBe('rejected');
+    expect(g.proposals.find((p) => p.id === 'new')?.votes[0].reason).toBe('Hablemos de la cantidad');
+    g = applyCommand(g, 'sam', { type: 'undo_reject', id: 'new', revision: 1 });
+    expect(g.proposals.find((p) => p.id === 'new')?.status).toBe('pending');
+    expect(g.proposals.find((p) => p.id === 'new')?.votes).toHaveLength(0);
+    expect(g.proposals.find((p) => p.id === 'new')?.retractedVotes?.[0].reason).toBe('Hablemos de la cantidad');
+    expect(g.activity.map((e) => e.type)).toContain('reject_undone');
+    g = vote(g, 'sam');
+    expect(balance(g, 'alex').earned).toBe(60);
+  });
+  it('lets the owner remove suggestions and unused categories, but protects pending members', () => {
+    let g = createDemo('es');
+    expect(() => applyCommand(g, 'sam', { type: 'remove_template', id: 'template-0' })).toThrow('owner_only');
+    expect(() => applyCommand(g, 'alex', { type: 'remove_category', title: g.categories[0] })).toThrow('category_in_use');
+    g = applyCommand(g, 'alex', { type: 'remove_template', id: 'template-0' });
+    g = applyCommand(g, 'alex', { type: 'remove_category', title: g.categories[0] });
+    expect(g.templates.some((tp) => tp.id === 'template-0')).toBe(false);
+    expect(g.categories).not.toContain('Cocina');
+    g = applyCommand(g, 'alex', { ...command, category: g.categories[0], templateId: undefined });
+    expect(() => applyCommand(g, 'alex', { type: 'remove_member', id: 'sam' })).toThrow('pending_requests');
+    g = applyCommand(g, 'alex', { type: 'withdraw', id: 'new', revision: 1 });
+    g = { ...g, proposals: g.proposals.filter((p) => p.status !== 'pending') };
+    g = applyCommand(g, 'alex', { type: 'remove_member', id: 'sam' });
+    expect(g.members).toHaveLength(1);
+  });
   it('reserves funds immediately, prevents overspending, and releases on withdrawal', () => {
     let g = createDemo('es', 'group');
     const cmd = { ...command, kind: 'redemption' as const, rewardId: 'demo-r1', points: 1 };

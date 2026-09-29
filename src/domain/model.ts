@@ -3,7 +3,7 @@ export type Kind = 'contribution' | 'reward' | 'redemption' | 'reward_change' | 
 export type Status = 'pending' | 'approved' | 'rejected' | 'withdrawn';
 export type Member = { id: string; name: string };
 export type Template = { id: string; title: string; category: string; points: number };
-export type Vote = { actor: string; choice: 'approve' | 'reject'; revision: number; at: string };
+export type Vote = { actor: string; choice: 'approve' | 'reject'; revision: number; at: string; reason?: string };
 export type SeenReceipt = { actor: string; revision: number; at: string };
 export type Proposal = {
   id: string;
@@ -21,6 +21,7 @@ export type Proposal = {
   revision: number;
   electorate: string[];
   votes: Vote[];
+  retractedVotes?: Vote[];
   adjustment?: { actor: string; points: number };
   history?: Proposal[];
   seen?: SeenReceipt[];
@@ -60,12 +61,16 @@ export type Command =
       rewardId?: string;
       photoPath?: string;
     }
-  | { type: 'vote'; id: string; revision: number; choice: 'approve' | 'reject' }
+  | { type: 'vote'; id: string; revision: number; choice: 'approve' | 'reject'; reason?: string }
+  | { type: 'undo_reject'; id: string; revision: number }
   | { type: 'adjust'; id: string; revision: number; points: number }
   | { type: 'accept_adjustment' | 'decline_adjustment' | 'withdraw'; id: string; revision: number }
   | { type: 'resubmit'; id: string; revision: number; points: number; title: string; note: string }
   | { type: 'template'; id: string; title: string; category: string; points: number }
-  | { type: 'category'; title: string };
+  | { type: 'category'; title: string }
+  | { type: 'remove_category'; title: string }
+  | { type: 'remove_template'; id: string }
+  | { type: 'remove_member'; id: string };
 
 export const quorum = (electorate: string[]) => Math.floor(electorate.length / 2) + 1;
 export type VoterStatus = 'approved' | 'rejected' | 'seen' | 'pending';
@@ -184,6 +189,32 @@ export function applyCommand(
     event('category', cmd.title.trim());
     return g;
   }
+  if (cmd.type === 'remove_category') {
+    requireThat(actor === g.owner, 'owner_only');
+    requireThat(g.categories.includes(cmd.title), 'not_found');
+    requireThat(!g.templates.some((t) => t.category === cmd.title), 'category_in_use');
+    g.categories = g.categories.filter((c) => c !== cmd.title);
+    event('category_removed', cmd.title);
+    return g;
+  }
+  if (cmd.type === 'remove_template') {
+    requireThat(actor === g.owner, 'owner_only');
+    const template = g.templates.find((t) => t.id === cmd.id);
+    requireThat(template, 'not_found');
+    g.templates = g.templates.filter((t) => t.id !== cmd.id);
+    event('template_removed', template.title);
+    return g;
+  }
+  if (cmd.type === 'remove_member') {
+    requireThat(actor === g.owner, 'owner_only');
+    requireThat(cmd.id !== g.owner, 'not_allowed');
+    const member = g.members.find((m) => m.id === cmd.id);
+    requireThat(member, 'not_found');
+    requireThat(!g.proposals.some((p) => p.status === 'pending'), 'pending_requests');
+    g.members = g.members.filter((m) => m.id !== cmd.id);
+    event('member_removed', member.name);
+    return g;
+  }
   if (cmd.type === 'template') {
     requireThat(actor === g.owner, 'owner_only');
     validPoints(cmd.points);
@@ -273,6 +304,16 @@ export function applyCommand(
     event('resubmitted', p.title, p.points, p.id);
     return g;
   }
+  if (cmd.type === 'undo_reject') {
+    requireThat(p.status === 'rejected' || p.status === 'pending', 'already_closed');
+    const vote = p.votes.find((v) => v.actor === actor && v.revision === p.revision && v.choice === 'reject');
+    requireThat(vote, 'not_allowed');
+    p.retractedVotes = [...(p.retractedVotes ?? []), vote];
+    p.votes = p.votes.filter((v) => v !== vote);
+    p.status = 'pending';
+    event('reject_undone', p.title, p.points, p.id);
+    return g;
+  }
   requireThat(p.status === 'pending', 'already_closed');
   if (cmd.type === 'withdraw') {
     requireThat(actor === p.author, 'author_only');
@@ -315,7 +356,8 @@ export function applyCommand(
     !p.votes.some((v) => v.actor === actor && v.revision === p.revision),
     'already_voted',
   );
-  p.votes.push({ actor, choice: cmd.choice, revision: p.revision, at });
+  requireThat(!cmd.reason || cmd.reason.trim().length <= 200, 'invalid_note');
+  p.votes.push({ actor, choice: cmd.choice, revision: p.revision, at, ...(cmd.choice === 'reject' && cmd.reason?.trim() ? { reason: cmd.reason.trim() } : {}) });
   event(cmd.choice === 'approve' ? 'voted_approve' : 'voted_reject', p.title, p.points, p.id);
   const votes = p.votes.filter((v) => v.revision === p.revision);
   if (votes.filter((v) => v.choice === cmd.choice).length >= quorum(p.electorate)) {

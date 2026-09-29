@@ -16,6 +16,8 @@ export function ProposalCard({
   const { colors, s } = useUi();
   const { group: g, actor, t, execute, busy, language } = useApp();
   const [adjust, setAdjust] = useState(false),
+    [confirmReject, setConfirmReject] = useState(false),
+    [rejectReason, setRejectReason] = useState(''),
     [points, setPoints] = useState(String(p.points)),
     [photoUrl, setPhotoUrl] = useState<string | null>(null);
   useEffect(() => {
@@ -182,12 +184,24 @@ export function ProposalCard({
                     label={t('Rechazar', 'Reject')}
                     variant="secondary"
                     disabled={busy}
-                    onPress={() =>
-                      execute({ type: 'vote', id: p.id, revision: p.revision, choice: 'reject' })
-                    }
+                    onPress={() => setConfirmReject(true)}
                   />
                 </View>
               </View>
+              {confirmReject && (
+                <View style={{ gap: 8, padding: 12, borderRadius: 14, backgroundColor: colors.negativeBg }}>
+                  <Txt style={{ fontWeight: '700' }}>{t('¿Rechazar esta solicitud?', 'Reject this request?')}</Txt>
+                  <Txt style={s.muted}>{t('Puedes dejar un motivo breve. Tu decisión quedará en el historial y podrás deshacerla.', 'You can add a short reason. Your decision will stay in the history and you can undo it.')}</Txt>
+                  <Field label={t('Motivo (opcional)', 'Reason (optional)')} value={rejectReason} onChangeText={setRejectReason} maxLength={200} />
+                  <Button label={t('Confirmar rechazo', 'Confirm rejection')} disabled={busy} onPress={async () => {
+                    if (await execute({ type: 'vote', id: p.id, revision: p.revision, choice: 'reject', reason: rejectReason })) {
+                      setConfirmReject(false);
+                      setRejectReason('');
+                    }
+                  }} />
+                  <Button label={t('Cancelar', 'Cancel')} variant="ghost" onPress={() => setConfirmReject(false)} />
+                </View>
+              )}
             </>
           ) : (
             !own && (
@@ -242,6 +256,17 @@ export function ProposalCard({
         </>
       )}
       <VoterStates proposal={p} />
+      {votes.filter((v) => v.choice === 'reject' && v.reason).map((v) => (
+        <Txt key={v.actor} style={s.muted}>{g?.members.find((m) => m.id === v.actor)?.name}: {v.reason}</Txt>
+      ))}
+      {detail && p.retractedVotes?.map((v, index) => (
+        <Txt key={`${v.actor}-${index}`} style={s.muted}>
+          {t(`${g?.members.find((m) => m.id === v.actor)?.name ?? 'Alguien'} retiró un rechazo`, `${g?.members.find((m) => m.id === v.actor)?.name ?? 'Someone'} undid a rejection`)}{v.reason ? `: ${v.reason}` : ''}
+        </Txt>
+      ))}
+      {(p.status === 'rejected' || p.status === 'pending') && votes.some((v) => v.actor === actor && v.choice === 'reject') && (
+        <Button label={t('Deshacer mi rechazo', 'Undo my rejection')} variant="secondary" disabled={busy} onPress={() => execute({ type: 'undo_reject', id: p.id, revision: p.revision })} />
+      )}
       {!detail && (
         <Button
           label={t('Ver detalle', 'View details')}

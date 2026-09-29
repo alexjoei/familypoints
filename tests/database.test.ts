@@ -184,6 +184,35 @@ describe('PostgreSQL RPC and permission integration', () => {
     expect(balance(g, people[0]).earned).toBe(10);
     await expect(act(id, 1, vote('c', 'approve', 2))).rejects.toThrow('already_closed');
   });
+  it('records a rejection reason and lets only its voter undo it', async () => {
+    const id = await makeGroup(2);
+    await act(id, 0, contribution());
+    let g = await act(id, 1, { ...vote('c', 'reject'), reason: 'Demasiados puntos' });
+    expect(g.proposals[0].status).toBe('rejected');
+    expect(g.proposals[0].votes[0].reason).toBe('Demasiados puntos');
+    await expect(act(id, 0, { type: 'undo_reject', id: 'c', revision: 1 })).rejects.toThrow('not_allowed');
+    g = await act(id, 1, { type: 'undo_reject', id: 'c', revision: 1 });
+    expect(g.proposals[0].status).toBe('pending');
+    expect(g.proposals[0].retractedVotes?.[0].reason).toBe('Demasiados puntos');
+    expect(g.activity.some((e) => e.type === 'reject_undone')).toBe(true);
+    g = await act(id, 1, vote('c'));
+    expect(balance(g, people[0]).earned).toBe(40);
+  });
+  it('limits removal of members, categories and suggestions to the owner', async () => {
+    const id = await makeGroup(2);
+    await expect(act(id, 1, { type: 'remove_template', id: 'template-0' })).rejects.toThrow('owner_only');
+    await expect(act(id, 0, { type: 'remove_category', title: 'Cocina' })).rejects.toThrow('category_in_use');
+    let g = await act(id, 0, { type: 'remove_template', id: 'template-0' });
+    g = await act(id, 0, { type: 'remove_category', title: 'Cocina' });
+    expect(g.categories).not.toContain('Cocina');
+    await act(id, 0, { ...contribution(), category: g.categories[0], templateId: null });
+    await expect(act(id, 0, { type: 'remove_member', id: people[1] })).rejects.toThrow('pending_requests');
+    await act(id, 0, { type: 'withdraw', id: 'c', revision: 1 });
+    g = await act(id, 0, { type: 'remove_member', id: people[1] });
+    expect(g.members).toHaveLength(1);
+    await as(1);
+    await expect(db.query('select fp_snapshot($1)', [id])).rejects.toThrow('not_member');
+  });
   it('uses approved reward costs, reserves funds and prevents double spending', async () => {
     const id = await makeGroup();
     await act(id, 0, { type: 'submit', id: 'limit', kind: 'debt_limit', title: 'Allow 100', points: 100, category: '', note: '', date: '2026-09-26' });

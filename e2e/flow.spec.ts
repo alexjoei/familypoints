@@ -34,8 +34,8 @@ test('a contribution can include a photo visible to the group', async ({ page })
 test('group shows member balances and votes on the negative balance limit', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
-  await page.getByRole('tab', { name: 'Grupo' }).click();
-  const members = page.getByText('Miembros', { exact: true }).locator('..');
+  await page.getByRole('tab', { name: /grupo/i }).click();
+  const members = page.getByText('Miembros y puntos acumulados', { exact: true }).locator('..');
   await expect(members.getByText('40 pt')).toBeVisible();
   await expect(members.getByText('20 pt')).toBeVisible();
   await page.getByRole('button', { name: 'Cambiar límite de saldo' }).click();
@@ -46,7 +46,7 @@ test('group shows member balances and votes on the negative balance limit', asyn
   await page.getByRole('tab', { name: 'Pendientes' }).click();
   await expect(page.getByText('Alex propone un límite de 100 puntos negativos')).toBeVisible();
   await page.getByRole('button', { name: 'Aceptar', exact: true }).last().click();
-  await page.getByRole('tab', { name: 'Grupo' }).click();
+  await page.getByRole('tab', { name: /grupo/i }).click();
   await expect(page.getByText('Hasta 100 puntos negativos')).toBeVisible();
 });
 test('mobile demo: create, reach majority, redeem, persist and change language', async ({
@@ -113,7 +113,7 @@ test('mobile demo: create, reach majority, redeem, persist and change language',
       .locator('..')
       .getByText('30', { exact: true }),
   ).toBeVisible();
-  await page.getByRole('tab', { name: 'Grupo' }).click();
+  await page.getByRole('tab', { name: /grupo/i }).click();
   await page.getByRole('button', { name: 'EN', exact: true }).click();
   await expect(page.getByText('Your crew. Your rules. Zero ceremony.')).toBeVisible();
   await page.getByRole('tab', { name: 'Home' }).click();
