@@ -1,5 +1,13 @@
 # Family Points — relevo de trabajo (29 septiembre 2026)
 
+## Estado más reciente (29 septiembre 2026, APK 0.1.13 terminado)
+
+**Build Android listo:** EAS `07c5caff-1266-4e46-9ceb-27db3bdc82df`, perfil `preview`, estado `FINISHED`, versión `0.1.13`, versionCode `16`, commit fuente `64baaea`. [APK directo](https://expo.dev/artifacts/eas/mdTlCTupqOzR39gq-cQv5zHso9AYVygkHqfM87i_f4U.apk). Descargado en `artifacts/family-points-0.1.13.apk` (107.964.762 bytes; ignorado por Git); `python -m zipfile -t` pasó y SHA256 `77A30A8E815DBE5A2C7EAE9156FAD7E7C0236F4FE1DC194D8CF2E1ACEDD7C7EE`. EAS tardó unos 26 minutos en la cola gratuita y unos 24 minutos compilando; no hubo error. Se actualizó `docs/apk-prueba.md` con descarga y protocolo de prueba.
+
+**Infraestructura:** EAS muestra la clave FCM V1 de la cuenta técnica correcta. `notify-activity` se desplegó correctamente en Supabase real (ver sección inmediatamente posterior para comando). No se aplicaron migraciones en este bloque. TypeScript, lint y 59 pruebas pasaron; configuración Expo resuelve `googleServicesFile`. `main` incluye los cambios funcionales de push y Firebase (`8fa1041`) y el aumento de versión (`64baaea`). Este bloque documental debe publicarse antes del próximo push.
+
+**Aún no verificado:** la entrega física del aviso con la app cerrada. Instalar **este** APK en dos Android con cuentas reales del mismo grupo, activar permiso en Configuración, cerrar o pasar a segundo plano el receptor y solicitar puntos desde el otro móvil. Si falla, anotar hora, cuentas y evento; revisar si hay token en `fp_push_tokens`, logs de `notify-activity` y tickets/receipts de Expo. No afirmar que está resuelto solo por compilar. iOS/APNs pendiente.
+
 ## Estado más reciente (29 septiembre 2026, credenciales FCM y servidor listos)
 
 El usuario completó en Google Cloud/EAS el permiso y la subida de la clave que faltaban. Verificado en la ficha de credenciales Android de Expo EAS: **FCM V1 service account key** presente para `familypoints-510007`, cliente `family-points-eas-push@familypoints-510007.iam.gserviceaccount.com`, subida el 29 de septiembre a las 15:01. No se descargó, leyó ni almacenó la clave privada en este repo. La app Android Firebase `app.familypoints.mobile` y su `google-services.json` público ya están en `main` desde `8fa1041`.

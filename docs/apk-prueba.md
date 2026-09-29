@@ -1,34 +1,31 @@
 # APK de prueba — 29 de septiembre de 2026
 
-La versión **0.1.12** (Android versionCode 15, `app.familypoints.mobile`) está lista para instalar. Se compiló desde el commit `93aa666` con la misma firma Android de las versiones anteriores.
+La versión **0.1.13** (Android versionCode 16, `app.familypoints.mobile`) está lista para instalar. Se compiló desde `64baaea` con la firma Android existente e incluye la configuración Firebase necesaria para recibir avisos push en segundo plano.
 
-- [Descargar APK 0.1.12](https://expo.dev/artifacts/eas/8BKzA5sXQTP82GN7p2WNuSdlQX_GIfAKR4pa2qsnWbw.apk)
-- [Build finalizado en Expo](https://expo.dev/accounts/alexjoei/projects/family-points/builds/56c3ac50-d8a2-4ffc-80d0-ffd155871c4d)
-- Copia local: `artifacts/family-points-0.1.12.apk` (107.961.102 bytes).
-- SHA256: `0DF6D8C85380AE0E7BA3BEDDF0E2435EB07EEC36DD07FC506BED8F10ADB73664`.
+- [Descargar APK 0.1.13](https://expo.dev/artifacts/eas/mdTlCTupqOzR39gq-cQv5zHso9AYVygkHqfM87i_f4U.apk)
+- [Build finalizado en Expo](https://expo.dev/accounts/alexjoei/projects/family-points/builds/07c5caff-1266-4e46-9ceb-27db3bdc82df)
+- Copia local: `artifacts/family-points-0.1.13.apk` (107.964.762 bytes, ignorada por Git).
+- SHA256: `77A30A8E815DBE5A2C7EAE9156FAD7E7C0236F4FE1DC194D8CF2E1ACEDD7C7EE`.
 
-Abre el enlace desde Android, descarga el archivo y ábrelo. Si Android lo pide, permite a ese navegador instalar aplicaciones. No hace falta Expo Go ni el servidor local.
+Abre el enlace desde Android, descarga e instala el archivo. Puedes actualizar la versión anterior. No hace falta Expo Go ni servidor local.
 
-## Qué probar en 0.1.12
+## Prueba decisiva de notificaciones
 
-1. Instalar el APK y entrar con una cuenta real (no la demo).
-2. Activar los avisos en Configuración y comprobar que llega una notificación del sistema cuando **otra persona** actúa en el grupo mientras esta app está cerrada o en segundo plano. Antes de esta versión solo llegaban con la app abierta.
-3. Desde el grupo del creador, abrir «Zona de peligro» en Configuración y comprobar el flujo de confirmación al eliminar un grupo; verificar que el resto de miembros pierde el acceso al momento.
-4. Probar el nuevo tema Cool en Configuración, junto a Pop, Calma y Noche.
-5. Comprobar que el aviso emergente dentro de la app se puede cerrar tocando su × sin fallos, incluso cerca del borde.
-6. Recorrido habitual: sumar, aceptar/rechazar, canjear, historial y saldo, para confirmar que nada se rompió.
+1. Instala **0.1.13** en dos Android, cada uno con una cuenta real distinta del mismo grupo. La demo local no sirve para esta prueba.
+2. En el móvil que recibirá el aviso, abre Configuración, activa los avisos y permite las notificaciones del sistema. Deja la app cerrada o en segundo plano; no uses «Forzar detención» de Android.
+3. Desde la otra cuenta, solicita sumar puntos. El receptor debería recibir un aviso del sistema sin abrir Family Points. Después prueba aceptar/rechazar para comprobar el aviso inverso.
+4. Si no llega, anota la hora aproximada, qué cuenta actuó, cuál debía recibirlo y si al abrir la app aparece la solicitud. No compartas tokens ni credenciales por el chat. Revisar entonces `fp_push_tokens`, la función Edge `notify-activity` y los tickets/receipts de Expo.
 
-La demo de pareja funciona sin cuenta, pero sus datos son locales y no se sincronizan. El acceso Google de este APK sigue usando la página alojada de Supabase: Google nativo Android continúa desactivado. Las notificaciones push en iOS no están configuradas (faltan credenciales APNs); en Android deberían funcionar sin pasos adicionales. La prueba en dos dispositivos físicos y con push real aún está pendiente de confirmación del usuario.
+La entrega con la app cerrada **todavía necesita esta prueba física**. EAS confirma que el APK compila, la clave FCM V1 está cargada y la función Edge está desplegada; eso por sí solo no demuestra entrega al dispositivo. iOS sigue pendiente de configurar APNs.
 
-## Verificación del código
+## Verificación y recompilación
 
-59 pruebas, TypeScript y lint correctos (ver `docs/estado.md`, entrada del 29 de septiembre sobre notificaciones push, borrar grupo y tema Cool). Migraciones `202609290012_delete_group.sql` y `202609290013_push_notifications.sql` aplicadas en Supabase real; función Edge `notify-activity` desplegada y verificada (responde 401 sin sesión). EAS terminó y el APK descargado superó la comprobación ZIP, manifiesto Android, cinco archivos DEX y bundle integrado. Falta la prueba en dispositivos Android físicos, en particular el push con la app cerrada.
+TypeScript, lint y 59 pruebas pasan. EAS confirmó `FINISHED` y el APK descargado superó la prueba de integridad ZIP. El build preview incrementa `versionCode` automáticamente y toma las variables públicas de Supabase de EAS:
 
-## Recompilar
-
-```powershell
-$env:NODE_USE_SYSTEM_CA = '1'
-npx eas-cli@latest build --platform android --profile preview --clear-cache
+```cmd
+set NODE_USE_SYSTEM_CA=1
+set NODE_OPTIONS=--use-system-ca
+npx eas-cli@latest build --platform android --profile preview --non-interactive --no-wait
 ```
 
-Las variables públicas de Supabase están en EAS preview. El secreto OAuth solo está en Supabase. Conservar la firma Android del proyecto permite instalar nuevas versiones como actualización. No se ha enviado a Google Play ni contratado un plan nuevo.
+Antes de cada push, actualizar `docs/handoff.md` con cambios, despliegues, build y pendientes.
