@@ -1,5 +1,11 @@
 # Family Points — relevo de trabajo (29 septiembre 2026)
 
+## Estado más reciente (29 septiembre 2026, credenciales FCM y servidor listos)
+
+El usuario completó en Google Cloud/EAS el permiso y la subida de la clave que faltaban. Verificado en la ficha de credenciales Android de Expo EAS: **FCM V1 service account key** presente para `familypoints-510007`, cliente `family-points-eas-push@familypoints-510007.iam.gserviceaccount.com`, subida el 29 de septiembre a las 15:01. No se descargó, leyó ni almacenó la clave privada en este repo. La app Android Firebase `app.familypoints.mobile` y su `google-services.json` público ya están en `main` desde `8fa1041`.
+
+La corrección de servidor `supabase/functions/notify-activity/index.ts` **sí se desplegó** ahora en el proyecto real `qvrfzvsciconvswrjbhy` con `set NODE_USE_SYSTEM_CA=1&& set NODE_OPTIONS=--use-system-ca&& npx supabase@latest functions deploy notify-activity --project-ref qvrfzvsciconvswrjbhy --debug`. El CLI respondió `Deployed Functions.`; el fallo anterior `FunctionsApiTransportError` no se reprodujo con esta configuración. No hay migraciones nuevas. La versión de app sube a `0.1.13`; EAS preview incrementará versionCode remoto. Pasaron TypeScript, lint y 59 pruebas antes de este cambio de versión. **Pendiente en este momento:** hacer commit/push de esta actualización de handoff y versión, generar APK EAS, verificar build y probar aviso entre dos móviles reales con el receptor cerrado. No afirmar entrega en segundo plano hasta esa prueba. iOS/APNs sigue sin configurar.
+
 ## Estado más reciente (29 septiembre 2026, Firebase registrado)
 
 **Situación real del push:** aún no funciona con la app cerrada. Firebase se activó por el titular para el proyecto Google Cloud existente `familypoints-510007` (plan Blaze ya visible), y se registró la app Android `app.familypoints.mobile`. Se descargó el `google-services.json` de ese proyecto, se añadió a la raíz del repo y `app.json` apunta a él mediante `android.googleServicesFile`. Es configuración cliente, **no** una clave privada de cuenta de servicio. `npx expo config --type public` confirma la ruta. FCM V1 figura «Enabled» en Firebase Console.
