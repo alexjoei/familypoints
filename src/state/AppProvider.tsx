@@ -150,10 +150,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const token = await getPushToken();
         if (active && token) {
           pushTokenRef.current = token;
-          supabase.rpc('fp_register_push_token', { p_token: token }).then(undefined, () => {});
+          supabase.rpc('fp_register_push_token', { p_token: token }).then(({ error }) => {
+            if (error) console.error('Push token registration failed', error);
+          }, (error) => console.error('Push token registration failed', error));
         }
       }
-    }).catch(() => {});
+    }).catch((error) => console.error('Push registration failed', error));
     return () => { active = false; };
   }, [actor, demo]);
   useEffect(() => {
@@ -412,9 +414,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (error) throw error;
         next = data as Group;
         const known = new Set(before.activity.map((e) => e.id));
-        for (const e of next.activity)
-          if (!known.has(e.id))
-            supabase!.functions.invoke('notify-activity', { body: { groupId: next.id, eventId: e.id } }).catch(() => {});
+        for (const e of next.activity) {
+          if (!known.has(e.id)) {
+            try {
+              const { error: pushError } = await supabase!.functions.invoke('notify-activity', {
+                body: { groupId: next.id, eventId: e.id },
+              });
+              if (pushError) console.error('Push delivery failed', pushError);
+            } catch (pushError) {
+              console.error('Push delivery failed', pushError);
+            }
+          }
+        }
       }
       groupRef.current = next;
       setGroup(next);
@@ -529,7 +540,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             const token = await getPushToken();
             if (token) {
               pushTokenRef.current = token;
-              supabase.rpc('fp_register_push_token', { p_token: token }).then(undefined, () => {});
+              const { error } = await supabase.rpc('fp_register_push_token', { p_token: token });
+              if (error) throw error;
             }
           }
         },

@@ -137,14 +137,24 @@ Deno.serve(async (req) => {
       })
       .filter(Boolean);
     for (let i = 0; i < messages.length; i += 100) {
-      await fetch('https://exp.host/--/api/v2/push/send', {
+      const response = await fetch('https://exp.host/--/api/v2/push/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(messages.slice(i, i + 100)),
       });
+      if (!response.ok) throw new Error(`Expo push HTTP ${response.status}: ${await response.text()}`);
+      const result = await response.json();
+      const tickets = Array.isArray(result.data) ? result.data : [result.data];
+      for (const ticket of tickets) {
+        if (ticket?.status === 'error') {
+          console.error('Expo push ticket rejected', ticket.details ?? ticket.message);
+          throw new Error(`Expo push ticket rejected: ${ticket.message ?? 'unknown error'}`);
+        }
+      }
     }
     return new Response(JSON.stringify({ sent: messages.length }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-  } catch {
-    return new Response('ok', { headers: corsHeaders });
+  } catch (error) {
+    console.error('notify-activity failed', error);
+    return new Response('push_failed', { status: 500, headers: corsHeaders });
   }
 });

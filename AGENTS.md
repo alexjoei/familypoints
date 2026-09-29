@@ -34,6 +34,19 @@ Run lint and typecheck before declaring any task done.
 Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli <command>` in Bun projects, or `npx eas-cli@latest <command>` otherwise; substitute that for bare `eas` in docs examples.
 Docs: https://docs.expo.dev/eas/index.md
 
+## Handover doc — update before every push
+
+Before pushing any commit to `main`, add what's needed to `docs/handoff.md` so this or another AI can pick up the work with no missing context. Prepend a new `## Estado más reciente (<fecha>)` section at the top (keep older sections below as history, per the file's own convention), covering:
+
+- What changed and why, in enough detail to act on without re-reading the whole diff.
+- Migrations applied to the real Supabase project (and the exact commands used, if non-obvious).
+- Builds triggered (APK/EAS link, commit hash, version/versionCode).
+- Bugs found and fixed after deploy, with root cause — not just "fixed X".
+- Anything discovered about the environment (credentials/sessions already available, restrictions hit, gotchas) that would otherwise be rediscovered the hard way.
+- What's left pending and what the next session should check first.
+
+This applies permanently to this project, not just once.
+
 ## Rules
 
 - If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
