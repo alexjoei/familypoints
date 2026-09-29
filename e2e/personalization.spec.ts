@@ -113,3 +113,17 @@ test('a non-owner can add and remove categories and suggestions with one tap on 
   await page.getByRole('button', { name: 'Quitar categoría Cocina' }).click();
   await expect(page.getByText('Preparar una cena')).toHaveCount(0);
 });
+test('notification choices are personal and survive a reload', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
+  await page.getByRole('tab', { name: 'Configuración' }).click();
+  await expect(page.getByRole('switch', { name: 'Solicitudes para revisar' })).toBeChecked();
+  await expect(page.getByRole('switch', { name: 'Cambios en el grupo' })).not.toBeChecked();
+  await page.getByRole('switch', { name: 'Solicitudes para revisar' }).uncheck();
+  await page.reload();
+  await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
+  await page.getByRole('tab', { name: 'Configuración' }).click();
+  await expect(page.getByRole('switch', { name: 'Solicitudes para revisar' })).not.toBeChecked();
+  await page.getByRole('button', { name: 'Sam', exact: true }).click();
+  await expect(page.getByRole('switch', { name: 'Solicitudes para revisar' })).toBeChecked();
+});

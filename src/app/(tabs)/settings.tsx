@@ -83,6 +83,24 @@ export default function Settings() {
       )}
       <ThemePicker />
       <Card>
+        <Txt style={s.subtitle}>{t('Avisos a tu gusto', 'Notifications your way')}</Txt>
+        <Txt style={s.muted}>{t('Elige qué novedades te interesan. Cada persona decide las suyas.', 'Choose which updates matter to you. Everyone sets their own.')}</Txt>
+        {!app.notificationPermission && (
+          <Button label={t('Activar avisos en este móvil', 'Enable alerts on this phone')} variant="secondary" onPress={() => run(app.enableNotifications)} />
+        )}
+        {([
+          ['requests', t('Solicitudes para revisar', 'Requests to review'), t('Alguien quiere sumar o canjear puntos.', 'Someone wants to add or redeem points.')],
+          ['decisions', t('Respuestas a lo mío', 'Replies to my requests'), t('Aceptaciones, rechazos y ajustes.', 'Approvals, declines and adjustments.')],
+          ['changes', t('Cambios en el grupo', 'Group changes'), t('Miembros, categorías y sugerencias.', 'Members, categories and suggestions.')],
+        ] as const).map(([key, label, detail]) => (
+          <View key={key} style={s.between}>
+            <View style={{ flex: 1 }}><Txt>{label}</Txt><Txt style={s.muted}>{detail}</Txt></View>
+            <Switch accessibilityLabel={label} value={app.notificationPreferences[key]} onValueChange={(v) => app.setNotificationPreference(key, v)} trackColor={{ true: colors.green }} />
+          </View>
+        ))}
+        <Txt style={s.muted}>{t('Los avisos aparecen al abrir la app o mientras la usas. Para avisos con la app cerrada falta activar el envío push.', 'Alerts appear when you open or use the app. Background push delivery still needs setup.')}</Txt>
+      </Card>
+      <Card>
         <Txt style={s.subtitle}>{t('Nuestros acuerdos', 'Our agreements')}</Txt>
         <Txt>
           {t(
@@ -240,7 +258,7 @@ export default function Settings() {
         onPress={() => run(app.exit)}
       />
       <Txt style={{ textAlign: 'center', fontSize: 12, color: colors.muted }}>
-        Family Points · 0.1.10
+        Family Points · 0.1.11
       </Txt>
     </Page>
   );

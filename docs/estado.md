@@ -89,3 +89,11 @@ Las migraciones 008 y 009 se aplicaron en el proyecto Supabase real. Se comprob�
 ## Cambios del 29 de septiembre — 0.1.10
 
 Categorías y sugerencias aparecen en bloques separados, cada uno con su botón «Añadir» encima de la lista. Se eliminan los controles de edición de esta pantalla y el término «plantilla». Cada fila tiene una «×» accesible que quita el elemento de inmediato. Quitar una categoría quita también sus sugerencias en la misma operación; las aportaciones antiguas permanecen en el historial. La migración `202609290010_simple_categories.sql` lleva ese comportamiento al grupo conectado. Se añadió un recorrido web que toca las «×» con un miembro no creador y comprueba el resultado.
+
+## Cambios del 29 de septiembre — 0.1.11
+
+La migración 010 se aplicó en Supabase. Una transacción con la identidad de un miembro no creador confirmó que puede añadir categoría y sugerencia y que quitar la categoría elimina ambas; se revirtió sin dejar datos de prueba.
+
+Se añadieron avisos para solicitudes que necesitan revisión, ajustes y decisiones sobre aportaciones o canjes, además de cambios del grupo opcionales. Cada persona puede elegir esos tres tipos por separado en Configuración; sus preferencias se guardan en el dispositivo por cuenta. Un aviso visible en cualquier pantalla enlaza al detalle de la solicitud. En Android, con permiso del sistema, también se muestra una notificación local cuando la app detecta un evento mientras está activa. El historial se comprueba cada 15 segundos y al volver a abrir la app. El envío push con la app cerrada sigue pendiente de credenciales FCM y de un servicio de envío: esta versión no promete avisos en segundo plano.
+
+TypeScript, lint, 56 pruebas y 11 recorridos web correctos. Expo Doctor: 21/21. Falta verificar los avisos del sistema y la instalación del APK en Android físico.

@@ -2,12 +2,14 @@ import React, { createContext, useCallback, useContext, useEffect, useRef, useSt
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
 import * as Linking from 'expo-linking';
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import type { Session } from '@supabase/supabase-js';
 import { applyCommand, Command, Group, Language, recordSeen, SeenReceipt } from '../domain/model';
 import { createDemo } from '../domain/demo';
 import { finishNativeAuth, supabase } from '../lib/supabase';
 import { isThemeId, ThemeId } from '../theme/themes';
+import { defaultNotificationPreferences, notificationForEvent, NotificationPreferences, PointNotification } from '../features/notification-events';
+import { installNotificationHandler, requestNotificationPermission, showPointNotification } from '../features/native-notifications';
 
 type Summary = { id: string; name: string };
 type Context = {
@@ -21,6 +23,12 @@ type Context = {
   language: Language;
   humor: boolean;
   themeId: ThemeId;
+  notificationPreferences: NotificationPreferences;
+  setNotificationPreference: (key: keyof NotificationPreferences, value: boolean) => void;
+  notificationPermission: boolean;
+  enableNotifications: () => Promise<void>;
+  notice: PointNotification | null;
+  dismissNotice: () => void;
   setThemeId: (id: ThemeId) => void;
   recovery: boolean;
   error: string | null;
@@ -113,12 +121,62 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [language, setLang] = useState<Language>('es'),
     [humor, setHum] = useState(true);
   const [themeId, setThemeId] = useState<ThemeId>('pop');
+  const [notificationPreferences, setNotificationPreferences] = useState(defaultNotificationPreferences);
+  const [notificationPermission, setNotificationPermission] = useState(false);
+  const [notice, setNotice] = useState<PointNotification | null>(null);
+  const notificationCursor = useRef<{ key: string; id: string } | null>(null);
   const [error, setError] = useState<string | null>(null),
     [recovery, setRecovery] = useState(false);
   const groupRef = useRef(group);
   useEffect(() => {
     groupRef.current = group;
   }, [group]);
+  useEffect(() => {
+    installNotificationHandler().catch(() => {});
+  }, []);
+  useEffect(() => {
+    if (!actor) return;
+    let active = true;
+    AsyncStorage.getItem(`fp.notificationPrefs.${demo ? 'demo.' : ''}${actor}`).then((raw) => {
+      if (active) setNotificationPreferences(raw ? { ...defaultNotificationPreferences, ...JSON.parse(raw) } : defaultNotificationPreferences);
+    }).catch(() => {});
+    if (Platform.OS !== 'web') import('expo-notifications').then(async (Notifications) => {
+      if (!active) return;
+      const permission = await Notifications.getPermissionsAsync();
+      if (active) setNotificationPermission(permission.granted);
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [actor, demo]);
+  useEffect(() => {
+    if (!group || !actor) return;
+    const key = `fp.notifications.${demo ? 'demo.' : ''}${actor}.${group.id}`;
+    let cancelled = false;
+    const process = async () => {
+      const events = group.activity;
+      if (!events.length) return;
+      let cursor = notificationCursor.current?.key === key ? notificationCursor.current.id : null;
+      if (!cursor) cursor = await AsyncStorage.getItem(key);
+      if (cancelled) return;
+      const latest = events[events.length - 1].id;
+      if (!cursor) {
+        notificationCursor.current = { key, id: latest };
+        await AsyncStorage.setItem(key, latest);
+        return;
+      }
+      const index = events.findIndex((e) => e.id === cursor);
+      const newer = index < 0 ? [] : events.slice(index + 1);
+      notificationCursor.current = { key, id: latest };
+      await AsyncStorage.setItem(key, latest);
+      if (cancelled) return;
+      const items = newer.map((e) => notificationForEvent(group, e, actor, language, notificationPreferences)).filter((e): e is PointNotification => !!e);
+      if (items.length) {
+        setNotice(items[items.length - 1]);
+        if (AppState.currentState === 'active') for (const item of items.slice(-3)) showPointNotification(item).catch(() => {});
+      }
+    };
+    process().catch(() => {});
+    return () => { cancelled = true; };
+  }, [group, actor, demo, language, notificationPreferences]);
   const locked = useRef(false),
     epoch = useRef(0);
   const pendingRequests = useRef(new Map<string, string>());
@@ -265,6 +323,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setGroup(null);
     setGroups([]);
     setActor(session?.user.id ?? '');
+    notificationCursor.current = null;
+    setNotice(null);
     if (session && supabase)
       supabase.rpc('fp_my_groups').then(({ data, error }) => {
         if (generation !== epoch.current) return;
@@ -377,6 +437,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setGroup(null);
     setDemo(false);
     setActor('');
+    notificationCursor.current = null;
+    setNotice(null);
     setError(null);
   }
   async function createGroup(name: string, display: string) {
@@ -423,6 +485,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         humor,
         themeId,
         setThemeId,
+        notificationPreferences,
+        setNotificationPreference: (key, value) => {
+          setNotificationPreferences((old) => {
+            const next = { ...old, [key]: value };
+            AsyncStorage.setItem(`fp.notificationPrefs.${demo ? 'demo.' : ''}${actor}`, JSON.stringify(next)).catch(() => {});
+            return next;
+          });
+        },
+        notificationPermission,
+        enableNotifications: async () => {
+          const granted = await requestNotificationPermission();
+          setNotificationPermission(granted);
+        },
+        notice,
+        dismissNotice: () => setNotice(null),
         recovery,
         error,
         t,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Pressable, View } from 'react-native';
@@ -8,7 +8,7 @@ import { Txt, useUi } from '../components/ui';
 import { AddPointsButton } from '../components/AddPointsButton';
 function Layout() {
   const { colors, theme } = useUi();
-  const { error, clearError } = useApp();
+  const { error, clearError, notice, dismissNotice, t } = useApp();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top', 'left', 'right']}>
       <StatusBar style={theme.dark ? 'light' : 'dark'} />
@@ -20,6 +20,19 @@ function Layout() {
           <Pressable onPress={clearError} accessibilityRole="button">
             <Txt style={{ color: colors.red }}>{error} ×</Txt>
           </Pressable>
+        </View>
+      )}
+      {notice && (
+        <View style={{ padding: 12, backgroundColor: colors.mint, gap: 3 }} accessibilityLiveRegion="polite">
+          <Pressable accessibilityRole="button" style={{ paddingRight: 28 }} onPress={() => {
+            const id = notice.proposalId;
+            dismissNotice();
+            if (id) router.push({ pathname: '/proposal', params: { id } });
+          }}>
+            <Txt style={{ fontWeight: '700' }}>{notice.title}</Txt>
+            <Txt>{notice.body}</Txt>
+          </Pressable>
+          <Pressable accessibilityRole="button" accessibilityLabel={t('Cerrar aviso', 'Dismiss alert')} onPress={dismissNotice} style={{ position: 'absolute', right: 12, top: 8 }}><Txt>×</Txt></Pressable>
         </View>
       )}
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
