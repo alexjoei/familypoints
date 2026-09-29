@@ -12,7 +12,7 @@ Al crear un grupo se abre **Compartir grupo** con su código visible. El creador
 
 ## Probar ahora
 
-**Android instalable:** [APK de prueba 0.1.8](https://expo.dev/artifacts/eas/nCn68igfebsC0X4NcN50YHSDpJYFts0yGRU4jSyv38s.apk). [Instrucciones y estado de verificación](docs/apk-prueba.md).
+**Android instalable:** [APK de prueba 0.1.9](https://expo.dev/artifacts/eas/VgVbd0oGjFcQnnhMuDNd6jW7S0rKssZgW17YoPz13K8.apk). [Instrucciones y estado de verificación](docs/apk-prueba.md).
 
 Requisitos: Node.js 24 LTS (Expo requiere al menos 22.13) y npm.
 
