@@ -47,6 +47,24 @@ test('quick add uses suggestion text without requiring a category', async ({ pag
   await expect(page.getByText('Preparar una cena', { exact: true }).first()).toBeVisible();
 });
 
+test('request points stays reachable when the mobile viewport shrinks for a keyboard', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
+  await page.getByRole('button', { name: 'Sumar puntos', exact: true }).first().click();
+  await page.getByRole('textbox', { name: '¿Qué has hecho?' }).fill('He hecho la cena');
+  await page.setViewportSize({ width: 390, height: 500 });
+  await page.getByRole('textbox', { name: '¿Cuántos puntos?' }).focus();
+  const submit = page.getByRole('button', { name: 'Solicitar puntos' });
+  await expect.poll(async () => {
+    const box = await submit.boundingBox();
+    const add = await page.getByTestId('add-family-points').boundingBox();
+    return box && add ? box.y + box.height + 8 <= add.y : false;
+  }).toBe(true);
+  await page.screenshot({ path: 'artifacts/contribute-keyboard-mobile.png' });
+  await submit.click();
+  await expect(page.getByText('He hecho la cena', { exact: true }).filter({ visible: true })).toBeVisible();
+});
+
 test('group shows member balances and votes on the negative balance limit', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();

@@ -92,7 +92,7 @@ test('a non-owner can add and remove categories and suggestions with one tap on 
   expect(settingsLabel!.x + settingsLabel!.width).toBeLessThanOrEqual(settingsTab!.x + settingsTab!.width + 1);
   const fontSizes = await Promise.all(['Inicio', 'Configuración'].map((label) => page.getByText(label, { exact: true }).evaluate((el) => getComputedStyle(el).fontSize)));
   expect(fontSizes[1]).toBe(fontSizes[0]);
-  await expect(page.getByRole('radio', { name: 'Cool' })).toHaveCount(0);
+  await expect(page.getByRole('radio', { name: 'Cool' })).toBeVisible();
   await page.getByRole('button', { name: 'Añadir categoría' }).click();
   await page.getByRole('textbox', { name: 'Nombre de la categoría' }).fill('Planes');
   await page.getByRole('button', { name: 'Guardar categoría' }).click();

@@ -3,7 +3,7 @@
     "name": "Family Points",
     "slug": "family-points",
     "scheme": "familypoints",
-    "version": "0.1.14",
+    "version": "0.1.15",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",

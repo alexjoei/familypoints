@@ -177,11 +177,13 @@ export function Page({
   title,
   subtitle,
   action,
+  scrollRef,
 }: {
   children: React.ReactNode;
   title: string;
   subtitle?: string;
   action?: React.ReactNode;
+  scrollRef?: React.Ref<ScrollView>;
 }) {
   const app = useApp();
   const { colors, s } = useUi();
@@ -190,6 +192,7 @@ export function Page({
   if (!focused) return null;
   return (
     <ScrollView
+      ref={scrollRef}
       style={{ flex: 1, backgroundColor: colors.bg }}
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={[s.page, !app.group && { paddingBottom: 40 }]}
