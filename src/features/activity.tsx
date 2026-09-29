@@ -18,6 +18,7 @@ const labels: Record<string, [string, string]> = {
   template: ['ha actualizado la plantilla', 'updated the template'],
   category: ['ha añadido una categoría', 'added a category'],
   category_removed: ['ha quitado una categoría', 'removed a category'],
+  category_renamed: ['ha cambiado una categoría', 'renamed a category'],
   template_removed: ['ha quitado una sugerencia', 'removed a suggestion'],
   member_removed: ['ha quitado a un miembro', 'removed a member'],
   reject_undone: ['ha deshecho su rechazo', 'undid a rejection'],

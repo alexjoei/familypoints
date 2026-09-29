@@ -115,6 +115,9 @@ describe('group agreements', () => {
     g = applyCommand(g, 'sam', { type: 'remove_category', title: g.categories[0] });
     g = applyCommand(g, 'sam', { type: 'category', title: 'Planes' });
     g = applyCommand(g, 'sam', { type: 'template', id: 'plans', title: 'Organizar salida', category: 'Planes', points: 12 });
+    g = applyCommand(g, 'sam', { type: 'rename_category', title: 'Planes', newTitle: 'Salidas' });
+    expect(g.categories).toContain('Salidas');
+    expect(g.templates.find((tp) => tp.id === 'plans')?.category).toBe('Salidas');
     expect(g.templates.find((tp) => tp.id === 'plans')?.points).toBe(12);
     expect(g.templates.some((tp) => tp.id === 'template-0')).toBe(false);
     expect(g.categories).not.toContain('Cocina');
@@ -155,7 +158,7 @@ describe('group agreements', () => {
     expect(balance(g, 'alex').available).toBe(10);
     expect(balance(g, 'alex').available).toBe(10);
   });
-  it('spends a reserved redemption only once', () => {
+  it('spends a redemption only after the group approves it', () => {
     let g = applyCommand(createDemo('es', 'group'), 'alex', {
       ...command,
       kind: 'redemption',

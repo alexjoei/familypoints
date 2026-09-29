@@ -206,6 +206,9 @@ describe('PostgreSQL RPC and permission integration', () => {
     g = await act(id, 1, { type: 'remove_category', title: 'Cocina' });
     g = await act(id, 1, { type: 'category', title: 'Planes' });
     g = await act(id, 1, { type: 'template', id: 'plans', title: 'Organizar salida', category: 'Planes', points: 12 });
+    g = await act(id, 1, { type: 'rename_category', title: 'Planes', newTitle: 'Salidas' });
+    expect(g.categories).toContain('Salidas');
+    expect(g.templates.find((tp) => tp.id === 'plans')?.category).toBe('Salidas');
     expect(g.templates.some((tp) => tp.id === 'plans')).toBe(true);
     expect(g.categories).not.toContain('Cocina');
     await act(id, 0, { ...contribution(), category: g.categories[0], templateId: null });

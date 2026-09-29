@@ -81,3 +81,7 @@ La migración `202609290007_undo_and_settings.sql` se aplicó en Supabase con re
 ## Cambios del 29 de septiembre — 0.1.8
 
 La pestaña pasa a llamarse «Configuración». Se retira Cool: quedan Pop, Calma y Noche; las preferencias antiguas de Club o Cool vuelven a Pop. Todos los miembros pueden añadir o quitar categorías y gestionar las sugerencias, tanto en la demo como en el grupo real. Quitar miembros continúa reservado al creador. La migración `202609290008_shared_categories.sql` actualiza esa autorización en Supabase.
+
+## Cambios del 29 de septiembre — 0.1.9
+
+La migración 008 se aplicó en el proyecto Supabase real. Se comprobó añadir y quitar categoría y sugerencia con la identidad de un miembro no creador dentro de una transacción revertida; una consulta posterior confirmó que no quedaron datos de prueba. La versión 0.1.9 permite además renombrar categorías y actualiza las sugerencias vinculadas mediante la migración 009. La pestaña «Configuración» tiene más espacio en móviles estrechos. El canje conserva la aprobación del grupo: reserva puntos al solicitarlo y los descuenta al aprobarse; el texto ahora lo explica.

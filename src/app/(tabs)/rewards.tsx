@@ -22,8 +22,8 @@ export default function Rewards() {
     <Page
       title={t('Canjear puntos', 'Redeem points')}
       subtitle={t(
-        'Elige en qué usar tus puntos. El grupo debe aceptar el canje.',
-        'Choose how to use your points. Your group must accept the redemption.',
+        'Pide el canje. Cuando tu pareja lo acepte, los puntos se descuentan solos.',
+        'Request a redemption. Once your partner approves it, your points are deducted automatically.',
       )}
     >
       <Card style={{ backgroundColor: colors.mint, borderColor: colors.mint }}>
@@ -156,8 +156,8 @@ export default function Rewards() {
             <Txt style={s.subtitle}>{r.title}</Txt>
             <Txt style={s.muted}>
               {t(
-                'Acordada por el grupo. El canje también se vota.',
-                'Agreed by the group. Redemptions are voted on too.',
+                'Coste acordado. Pide el canje para que el resto lo acepte.',
+                'Agreed cost. Request a redemption for the others to approve.',
               )}
             </Txt>
             <Button
@@ -189,8 +189,8 @@ export default function Rewards() {
               <View style={{ gap: 10, padding: 14, backgroundColor: colors.bg, borderRadius: 14 }}>
                 <Txt>
                   {t(
-                    `Se reservarán ${cost} puntos hasta que el grupo decida. Te quedarán ${b.available - cost} disponibles.`,
-                    `We will reserve ${cost} points until the group decides. You will have ${b.available - cost} available.`,
+                    `Se reservarán ${cost} puntos. Si lo aceptan, quedará canjeado y se descontarán de tu saldo.`,
+                    `${cost} points will be reserved. If approved, the redemption is complete and the points leave your balance.`,
                   )}
                 </Txt>
                 <Button

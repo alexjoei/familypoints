@@ -55,6 +55,8 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: t('Configuración', 'Settings'),
+          tabBarItemStyle: { flex: 1.4 },
+          tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
           tabBarIcon: ({ color }) => <Icon name="people-outline" color={color} />,
         }}
       />

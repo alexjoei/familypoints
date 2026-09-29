@@ -11,6 +11,7 @@ export default function Settings() {
   const app = useApp(),
     { group: g, t } = app;
   const [category, setCategory] = useState(''),
+    [rename, setRename] = useState<{ previous: string; next: string } | null>(null),
     [edit, setEdit] = useState<Template | null>(null),
     [debtForm, setDebtForm] = useState(false),
     [debtValue, setDebtValue] = useState('100'),
@@ -182,10 +183,18 @@ export default function Settings() {
           {g.categories.map((c) => (
             <View key={c} style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Chip label={c} />
+              <Button label={t('Editar', 'Edit')} variant="ghost" onPress={() => setRename({ previous: c, next: c })} />
               <Button label="×" variant="ghost" onPress={() => setRemove(`category:${c}`)} />
             </View>
           ))}
         </View>
+        {rename && <View style={{ gap: 8 }}>
+          <Field label={t('Nombre de categoría', 'Category name')} value={rename.next} onChangeText={(next) => setRename({ ...rename, next })} maxLength={40} />
+          <Button label={t('Guardar categoría', 'Save category')} disabled={app.busy || !rename.next.trim()} onPress={async () => {
+            if (await app.execute({ type: 'rename_category', title: rename.previous, newTitle: rename.next })) setRename(null);
+          }} />
+          <Button label={t('Cancelar', 'Cancel')} variant="ghost" onPress={() => setRename(null)} />
+        </View>}
         <>
             <Field
               label={t('Nueva categoría', 'New category')}

@@ -68,6 +68,7 @@ export type Command =
   | { type: 'resubmit'; id: string; revision: number; points: number; title: string; note: string }
   | { type: 'template'; id: string; title: string; category: string; points: number }
   | { type: 'category'; title: string }
+  | { type: 'rename_category'; title: string; newTitle: string }
   | { type: 'remove_category'; title: string }
   | { type: 'remove_template'; id: string }
   | { type: 'remove_member'; id: string };
@@ -186,6 +187,15 @@ export function applyCommand(
     requireThat(!g.categories.includes(cmd.title.trim()), 'duplicate');
     g.categories.push(cmd.title.trim());
     event('category', cmd.title.trim());
+    return g;
+  }
+  if (cmd.type === 'rename_category') {
+    validText(cmd.newTitle, 40);
+    requireThat(g.categories.includes(cmd.title), 'not_found');
+    requireThat(cmd.title === cmd.newTitle.trim() || !g.categories.includes(cmd.newTitle.trim()), 'duplicate');
+    g.categories = g.categories.map((c) => c === cmd.title ? cmd.newTitle.trim() : c);
+    g.templates = g.templates.map((t) => t.category === cmd.title ? { ...t, category: cmd.newTitle.trim() } : t);
+    event('category_renamed', `${cmd.title} → ${cmd.newTitle.trim()}`);
     return g;
   }
   if (cmd.type === 'remove_category') {
