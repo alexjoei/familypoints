@@ -23,16 +23,31 @@ function Layout() {
         </View>
       )}
       {notice && (
-        <View style={{ padding: 12, backgroundColor: colors.mint, gap: 3 }} accessibilityLiveRegion="polite">
-          <Pressable accessibilityRole="button" style={{ paddingRight: 28 }} onPress={() => {
-            const id = notice.proposalId;
-            dismissNotice();
-            if (id) router.push({ pathname: '/proposal', params: { id } });
-          }}>
+        <View
+          style={{ flexDirection: 'row', alignItems: 'flex-start', padding: 12, gap: 4, backgroundColor: colors.mint }}
+          accessibilityLiveRegion="polite"
+        >
+          <Pressable
+            accessibilityRole="button"
+            style={{ flex: 1, gap: 3 }}
+            onPress={() => {
+              const id = notice.proposalId;
+              dismissNotice();
+              if (id) router.push({ pathname: '/proposal', params: { id } });
+            }}
+          >
             <Txt style={{ fontWeight: '700' }}>{notice.title}</Txt>
             <Txt>{notice.body}</Txt>
           </Pressable>
-          <Pressable accessibilityRole="button" accessibilityLabel={t('Cerrar aviso', 'Dismiss alert')} onPress={dismissNotice} style={{ position: 'absolute', right: 12, top: 8 }}><Txt>×</Txt></Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('Cerrar aviso', 'Dismiss alert')}
+            onPress={dismissNotice}
+            hitSlop={12}
+            style={{ padding: 8, margin: -8 }}
+          >
+            <Txt style={{ fontSize: 18, fontWeight: '700' }}>×</Txt>
+          </Pressable>
         </View>
       )}
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>

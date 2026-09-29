@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 import type { PointNotification } from './notification-events';
 
 export async function requestNotificationPermission(): Promise<boolean> {
@@ -22,6 +23,17 @@ export async function showPointNotification(item: PointNotification): Promise<vo
     content: { title: item.title, body: item.body, data: { proposalId: item.proposalId ?? '' } },
     trigger: null,
   });
+}
+
+export async function getPushToken(): Promise<string | null> {
+  if (Platform.OS === 'web') return null;
+  const Notifications = await import('expo-notifications');
+  const permission = await Notifications.getPermissionsAsync();
+  if (!permission.granted) return null;
+  const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+  if (!projectId) return null;
+  const { data } = await Notifications.getExpoPushTokenAsync({ projectId });
+  return data;
 }
 
 export async function installNotificationHandler(): Promise<void> {

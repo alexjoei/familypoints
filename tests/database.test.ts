@@ -296,6 +296,26 @@ describe('PostgreSQL RPC and permission integration', () => {
     expect(g.proposals.find((p) => p.id === photoId)?.photoPath).toBe(path);
     await expect(act(id, 0, { ...contribution('bad-photo'), photoPath: path })).rejects.toThrow('invalid_photo');
   });
+  it('lets only the owner delete a group, wiping members, activity and photos', async () => {
+    const id = await makeGroup();
+    await act(id, 0, contribution());
+    const path = `${id}/${people[0]}/${randomUUID()}.jpg`;
+    await as(0);
+    await db.exec('set role authenticated');
+    try {
+      await db.query("insert into storage.objects(bucket_id,name,owner_id) values('fp-contributions',$1,$2)", [path, people[0]]);
+    } finally { await db.exec('reset role'); }
+    await as(1);
+    await expect(db.query('select fp_delete_group($1)', [id])).rejects.toThrow('owner_only');
+    await as(0);
+    await db.query('select fp_delete_group($1)', [id]);
+    await expect(db.query('select fp_snapshot($1)', [id])).rejects.toThrow('not_member');
+    expect((await db.query('select 1 from fp_groups where id=$1', [id])).rows).toHaveLength(0);
+    expect((await db.query('select 1 from fp_members where group_id=$1', [id])).rows).toHaveLength(0);
+    expect((await db.query('select 1 from fp_proposals where group_id=$1', [id])).rows).toHaveLength(0);
+    expect((await db.query('select 1 from fp_activity where group_id=$1', [id])).rows).toHaveLength(0);
+    expect((await db.query('select 1 from storage.objects where name=$1', [path])).rows).toHaveLength(0);
+  });
   it('releases rejected reservations and does not alter existing redemptions when reward price changes', async () => {
     const id = await makeGroup();
     await act(id, 0, contribution());

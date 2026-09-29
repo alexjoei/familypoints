@@ -62,11 +62,11 @@ Ideas sin implementar: suscripción por grupo para automatizaciones, estadístic
 
 ## Ajustes de experiencia
 
-Añadir Family Points es la acción global del botón + centrado abajo. El saldo se presenta como botín y la acción de recompensas como Canjear Family Points. Tres estilos gratuitos: Pop (predeterminado), Calma y Noche, elegidos por cada persona en su dispositivo.
+Añadir Family Points es la acción global del botón + centrado abajo. El saldo se presenta como botín y la acción de recompensas como Canjear Family Points. Cuatro estilos gratuitos: Pop (predeterminado), Calma, Noche y Cool, elegidos por cada persona en su dispositivo.
 
 En pendientes se muestran los miembros con derecho a voto: reloj pendiente, ojo visto sin votar, check verde aprobado y cruz roja rechazado. Visto significa que abrió el detalle de esa revisión. No equivale a aprobación.
 
-Monetización: estos tres estilos y los estados individuales permanecen gratuitos. Se mantienen para más adelante las ideas de automatizaciones y estadísticas premium por grupo, sin implementar cobros.
+Monetización: estos estilos y los estados individuales permanecen gratuitos. Se mantienen para más adelante las ideas de automatizaciones y estadísticas premium por grupo, sin implementar cobros.
 
 ## Claridad del flujo — 27 de septiembre de 2026
 

@@ -9,7 +9,7 @@ import { createDemo } from '../domain/demo';
 import { finishNativeAuth, supabase } from '../lib/supabase';
 import { isThemeId, ThemeId } from '../theme/themes';
 import { defaultNotificationPreferences, notificationForEvent, NotificationPreferences, PointNotification } from '../features/notification-events';
-import { installNotificationHandler, requestNotificationPermission, showPointNotification } from '../features/native-notifications';
+import { getPushToken, installNotificationHandler, requestNotificationPermission, showPointNotification } from '../features/native-notifications';
 
 type Summary = { id: string; name: string };
 type Context = {
@@ -45,6 +45,7 @@ type Context = {
   openGroups: () => Promise<void>;
   createGroup: (name: string, display: string) => Promise<void>;
   joinGroup: (code: string, display: string) => Promise<void>;
+  deleteGroup: (id: string) => Promise<void>;
   report: (e: unknown) => void;
   clearError: () => void;
   setRecovery: (v: boolean) => void;
@@ -125,6 +126,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [notificationPermission, setNotificationPermission] = useState(false);
   const [notice, setNotice] = useState<PointNotification | null>(null);
   const notificationCursor = useRef<{ key: string; id: string } | null>(null);
+  const pushTokenRef = useRef<string | null>(null);
   const [error, setError] = useState<string | null>(null),
     [recovery, setRecovery] = useState(false);
   const groupRef = useRef(group);
@@ -144,9 +146,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (!active) return;
       const permission = await Notifications.getPermissionsAsync();
       if (active) setNotificationPermission(permission.granted);
+      if (permission.granted && !demo && supabase) {
+        const token = await getPushToken();
+        if (active && token) {
+          pushTokenRef.current = token;
+          supabase.rpc('fp_register_push_token', { p_token: token }).then(undefined, () => {});
+        }
+      }
     }).catch(() => {});
     return () => { active = false; };
   }, [actor, demo]);
+  useEffect(() => {
+    if (demo || !actor || !supabase) return;
+    supabase.rpc('fp_set_notification_prefs', { p_prefs: notificationPreferences, p_language: language }).then(undefined, () => {});
+  }, [notificationPreferences, language, demo, actor]);
   useEffect(() => {
     if (!group || !actor) return;
     const key = `fp.notifications.${demo ? 'demo.' : ''}${actor}.${group.id}`;
@@ -279,7 +292,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           const p = JSON.parse(prefs);
           setLang(p.language === 'en' ? 'en' : 'es');
           setHum(p.humor !== false);
-          if (p.themeId === 'club' || p.themeId === 'cool') setThemeId('pop');
+          if (p.themeId === 'club') setThemeId('pop');
           else if (isThemeId(p.themeId)) setThemeId(p.themeId);
         }
         if (result?.error) throw result.error;
@@ -377,7 +390,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [demo, group?.id]);
   async function execute(cmd: Command) {
     if (locked.current || !groupRef.current) return false;
-    const fingerprint = `${groupRef.current.id}:${actor}:${JSON.stringify(cmd)}`;
+    const before = groupRef.current;
+    const fingerprint = `${before.id}:${actor}:${JSON.stringify(cmd)}`;
     const request = pendingRequests.current.get(fingerprint) ?? Crypto.randomUUID();
     pendingRequests.current.set(fingerprint, request);
     locked.current = true;
@@ -391,12 +405,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         await persistDemo(next);
       } else {
         const { data, error } = await supabase!.rpc('fp_action', {
-          p_group: groupRef.current.id,
+          p_group: before.id,
           p_command: cmd,
           p_request: request,
         });
         if (error) throw error;
         next = data as Group;
+        const known = new Set(before.activity.map((e) => e.id));
+        for (const e of next.activity)
+          if (!known.has(e.id))
+            supabase!.functions.invoke('notify-activity', { body: { groupId: next.id, eventId: e.id } }).catch(() => {});
       }
       groupRef.current = next;
       setGroup(next);
@@ -431,6 +449,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (busy) return;
     epoch.current++;
     if (!demo && supabase) {
+      if (pushTokenRef.current) supabase.rpc('fp_unregister_push_token', { p_token: pushTokenRef.current }).then(undefined, () => {});
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
     }
@@ -461,6 +480,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error;
     await selectGroup(data);
     await AsyncStorage.removeItem('fp.pendingInvite');
+  }
+  async function deleteGroup(id: string) {
+    if (!supabase) throw new Error('not_configured');
+    const { error } = await supabase.rpc('fp_delete_group', { p_group: id });
+    if (error) throw error;
+    epoch.current++;
+    groupRef.current = null;
+    setGroup(null);
+    setGroups((old) => old.filter((g) => g.id !== id));
   }
   async function openGroups() {
     if (demo || !supabase || busy) return;
@@ -497,6 +525,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         enableNotifications: async () => {
           const granted = await requestNotificationPermission();
           setNotificationPermission(granted);
+          if (granted && !demo && supabase) {
+            const token = await getPushToken();
+            if (token) {
+              pushTokenRef.current = token;
+              supabase.rpc('fp_register_push_token', { p_token: token }).then(undefined, () => {});
+            }
+          }
         },
         notice,
         dismissNotice: () => setNotice(null),
@@ -517,6 +552,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         openGroups,
         createGroup,
         joinGroup,
+        deleteGroup,
         report,
         clearError: () => setError(null),
         setRecovery,

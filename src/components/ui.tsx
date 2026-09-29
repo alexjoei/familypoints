@@ -311,4 +311,5 @@ const themeStyles = {
   pop: createStyles(themes.pop),
   calm: createStyles(themes.calm),
   night: createStyles(themes.night),
+  cool: createStyles(themes.cool),
 };

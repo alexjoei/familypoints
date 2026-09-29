@@ -16,7 +16,8 @@ export default function Settings() {
     [debtForm, setDebtForm] = useState(false),
     [debtValue, setDebtValue] = useState('100'),
     [remove, setRemove] = useState<string | null>(null),
-    [working, setWorking] = useState(false);
+    [working, setWorking] = useState(false),
+    [deleteConfirm, setDeleteConfirm] = useState(false);
   if (!g) return null;
   const run = async (fn: () => Promise<unknown>) => {
     setWorking(true);
@@ -98,7 +99,7 @@ export default function Settings() {
             <Switch accessibilityLabel={label} value={app.notificationPreferences[key]} onValueChange={(v) => app.setNotificationPreference(key, v)} trackColor={{ true: colors.green }} />
           </View>
         ))}
-        <Txt style={s.muted}>{t('Los avisos aparecen al abrir la app o mientras la usas. Para avisos con la app cerrada falta activar el envío push.', 'Alerts appear when you open or use the app. Background push delivery still needs setup.')}</Txt>
+        <Txt style={s.muted}>{t('Con los avisos activados también llegan con la app cerrada o en segundo plano.', 'With alerts enabled, they also arrive when the app is closed or in the background.')}</Txt>
       </Card>
       <Card>
         <Txt style={s.subtitle}>{t('Nuestros acuerdos', 'Our agreements')}</Txt>
@@ -257,6 +258,37 @@ export default function Settings() {
         disabled={app.busy || working}
         onPress={() => run(app.exit)}
       />
+      {owner && !app.demo && (
+        <Card style={{ backgroundColor: colors.negativeBg }}>
+          <Txt style={{ fontWeight: '700', color: colors.red }}>{t('Zona de peligro', 'Danger zone')}</Txt>
+          {!deleteConfirm ? (
+            <Button
+              label={t('Eliminar grupo', 'Delete group')}
+              variant="danger"
+              onPress={() => setDeleteConfirm(true)}
+            />
+          ) : (
+            <View style={{ gap: 8 }}>
+              <Txt>
+                {t(
+                  `¿Eliminar ${g.name} para siempre? Se borran miembros, saldos, historial y fotos de todos. No se puede deshacer.`,
+                  `Delete ${g.name} for good? Members, balances, history and everyone's photos are removed. This cannot be undone.`,
+                )}
+              </Txt>
+              <Button
+                label={t('Sí, eliminar el grupo', 'Yes, delete the group')}
+                variant="danger"
+                disabled={working}
+                onPress={() => run(async () => {
+                  await app.deleteGroup(g.id);
+                  setDeleteConfirm(false);
+                })}
+              />
+              <Button label={t('Cancelar', 'Cancel')} variant="ghost" onPress={() => setDeleteConfirm(false)} />
+            </View>
+          )}
+        </Card>
+      )}
       <Txt style={{ textAlign: 'center', fontSize: 12, color: colors.muted }}>
         Family Points · 0.1.12
       </Txt>

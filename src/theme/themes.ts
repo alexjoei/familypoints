@@ -1,4 +1,4 @@
-export type ThemeId = 'pop' | 'calm' | 'night';
+export type ThemeId = 'pop' | 'calm' | 'night' | 'cool';
 export type Palette = {
   bg: string;
   ink: string;
@@ -121,7 +121,37 @@ export const themes: Record<ThemeId, Theme> = {
       waitingBg: '#413B25',
     },
   },
+  cool: {
+    id: 'cool',
+    name: ['Cool', 'Cool'],
+    description: ['Azul fresco y limpio, directo al grano.', 'Cool blue, clean and to the point.'],
+    dark: false,
+    radius: 24,
+    titleSize: 34,
+    borderWidth: 1.5,
+    colors: {
+      bg: '#EFF6FF',
+      ink: '#152A4A',
+      muted: '#5B7091',
+      green: '#1E88E5',
+      mint: '#DCEEFF',
+      line: '#CBDFF5',
+      white: '#FFFFFF',
+      orange: '#B35900',
+      peach: '#FFEEDD',
+      red: '#B23A3A',
+      onPrimary: '#FFFFFF',
+      heroMuted: '#E4F1FF',
+      placeholder: '#7E93B0',
+      positive: '#187442',
+      negative: '#B73549',
+      waiting: '#80611A',
+      positiveBg: '#E0F5E6',
+      negativeBg: '#FFE4E9',
+      waitingBg: '#FFF2CF',
+    },
+  },
 };
 export function isThemeId(value: unknown): value is ThemeId {
-  return value === 'pop' || value === 'calm' || value === 'night';
+  return value === 'pop' || value === 'calm' || value === 'night' || value === 'cool';
 }
