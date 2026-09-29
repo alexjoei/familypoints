@@ -11,8 +11,8 @@ export default function Settings() {
   const app = useApp(),
     { group: g, t } = app;
   const [category, setCategory] = useState(''),
-    [rename, setRename] = useState<{ previous: string; next: string } | null>(null),
-    [edit, setEdit] = useState<Template | null>(null),
+    [categoryForm, setCategoryForm] = useState(false),
+    [suggestion, setSuggestion] = useState<Template | null>(null),
     [debtForm, setDebtForm] = useState(false),
     [debtValue, setDebtValue] = useState('100'),
     [remove, setRemove] = useState<string | null>(null),
@@ -63,7 +63,7 @@ export default function Settings() {
             )}
           </View>
         ))}
-        {remove && !remove.includes(':') && (
+        {remove && (
           <View style={{ gap: 8, padding: 12, backgroundColor: colors.negativeBg, borderRadius: 14 }}>
             <Txt>{t(`¿Quitar a ${g.members.find((m) => m.id === remove)?.name}? Su historial seguirá visible. Resolved primero las solicitudes pendientes.`, `Remove ${g.members.find((m) => m.id === remove)?.name}? Their history stays visible. Resolve pending requests first.`)}</Txt>
             <Button label={t('Confirmar', 'Confirm')} disabled={app.busy || g.proposals.some((p) => p.status === 'pending')} onPress={async () => {
@@ -178,109 +178,52 @@ export default function Settings() {
         </View>
       </Card>
       <Card>
-        <Txt style={s.subtitle}>{t('Categorías y sugerencias', 'Categories and suggestions')}</Txt>
-        <View style={s.wrap}>
-          {g.categories.map((c) => (
-            <View key={c} style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Chip label={c} />
-              <Button label={t('Editar', 'Edit')} variant="ghost" onPress={() => setRename({ previous: c, next: c })} />
-              <Button label="×" variant="ghost" onPress={() => setRemove(`category:${c}`)} />
-            </View>
-          ))}
-        </View>
-        {rename && <View style={{ gap: 8 }}>
-          <Field label={t('Nombre de categoría', 'Category name')} value={rename.next} onChangeText={(next) => setRename({ ...rename, next })} maxLength={40} />
-          <Button label={t('Guardar categoría', 'Save category')} disabled={app.busy || !rename.next.trim()} onPress={async () => {
-            if (await app.execute({ type: 'rename_category', title: rename.previous, newTitle: rename.next })) setRename(null);
-          }} />
-          <Button label={t('Cancelar', 'Cancel')} variant="ghost" onPress={() => setRename(null)} />
-        </View>}
-        <>
-            <Field
-              label={t('Nueva categoría', 'New category')}
-              value={category}
-              onChangeText={setCategory}
-              maxLength={40}
-            />
-            <Button
-              label={t('Añadir categoría', 'Add category')}
-              variant="secondary"
-              disabled={app.busy || !category.trim()}
-              onPress={async () => {
-                if (await app.execute({ type: 'category', title: category })) setCategory('');
-              }}
-            />
-        </>
+        <Txt style={s.subtitle}>{t('Categorías', 'Categories')}</Txt>
+        <Txt style={s.muted}>{t('Para ordenar lo que sumáis. Si quitas una, también desaparecen sus sugerencias; el historial sigue ahí.', 'Keep points organized. Removing a category also removes its suggestions; history stays.')}</Txt>
+        {!categoryForm ? (
+          <Button label={t('Añadir categoría', 'Add category')} variant="secondary" onPress={() => setCategoryForm(true)} />
+        ) : (
+          <View style={{ gap: 10 }}>
+            <Field label={t('Nombre de la categoría', 'Category name')} value={category} onChangeText={setCategory} maxLength={40} autoFocus />
+            <Button label={t('Guardar categoría', 'Save category')} disabled={app.busy || !category.trim()} onPress={async () => {
+              if (await app.execute({ type: 'category', title: category })) { setCategory(''); setCategoryForm(false); }
+            }} />
+            <Button label={t('Cancelar', 'Cancel')} variant="ghost" onPress={() => { setCategory(''); setCategoryForm(false); }} />
+          </View>
+        )}
+        {g.categories.map((c) => (
+          <View key={c} style={s.between}>
+            <Txt style={{ flex: 1, fontWeight: '600' }}>{c}</Txt>
+            <Button label="×" accessibilityLabel={t(`Quitar categoría ${c}`, `Remove category ${c}`)} variant="ghost" disabled={app.busy} onPress={() => app.execute({ type: 'remove_category', title: c })} />
+          </View>
+        ))}
+      </Card>
+      <Card>
+        <Txt style={s.subtitle}>{t('Sugerencias', 'Suggestions')}</Txt>
+        <Txt style={s.muted}>{t('Ideas rápidas para sumar puntos. Cada vez podéis proponer otra cantidad.', 'Quick ideas for adding points. You can suggest a different amount each time.')}</Txt>
+        {!suggestion ? (
+          <Button label={t('Añadir sugerencia', 'Add suggestion')} variant="secondary" disabled={!g.categories.length} onPress={() => setSuggestion({ id: Crypto.randomUUID(), title: '', category: g.categories[0], points: 15 })} />
+        ) : (
+          <View style={{ gap: 12 }}>
+            <Field label={t('¿Qué se puede hacer?', 'What can someone do?')} value={suggestion.title} onChangeText={(title) => setSuggestion({ ...suggestion, title })} maxLength={100} autoFocus />
+            <Field label={t('Puntos sugeridos', 'Suggested points')} value={String(suggestion.points || '')} onChangeText={(v) => setSuggestion({ ...suggestion, points: Number(v) })} keyboardType="number-pad" />
+            <Txt style={s.muted}>{t('Categoría', 'Category')}</Txt>
+            <View style={s.wrap}>{g.categories.map((c) => <Chip key={c} label={c} selected={suggestion.category === c} onPress={() => setSuggestion({ ...suggestion, category: c })} />)}</View>
+            <Button label={t('Guardar sugerencia', 'Save suggestion')} disabled={app.busy || !suggestion.title.trim() || !suggestion.points || !g.categories.includes(suggestion.category)} onPress={async () => {
+              if (await app.execute({ type: 'template', ...suggestion })) setSuggestion(null);
+            }} />
+            <Button label={t('Cancelar', 'Cancel')} variant="ghost" onPress={() => setSuggestion(null)} />
+          </View>
+        )}
         {g.templates.map((tp) => (
           <View key={tp.id} style={s.between}>
             <View style={{ flex: 1 }}>
-              <Txt>{tp.title}</Txt>
-              <Txt style={s.muted}>
-                {tp.category} · {tp.points} pt
-              </Txt>
+              <Txt style={{ fontWeight: '600' }}>{tp.title}</Txt>
+              <Txt style={s.muted}>{tp.category} · {tp.points} pt</Txt>
             </View>
-              <View style={s.row}>
-                <Button label={t('Editar', 'Edit')} variant="ghost" onPress={() => setEdit(tp)} />
-                <Button label={t('Quitar', 'Remove')} variant="ghost" onPress={() => setRemove(`template:${tp.id}`)} />
-              </View>
+            <Button label="×" accessibilityLabel={t(`Quitar sugerencia ${tp.title}`, `Remove suggestion ${tp.title}`)} variant="ghost" disabled={app.busy} onPress={() => app.execute({ type: 'remove_template', id: tp.id })} />
           </View>
         ))}
-          <Button
-            label={t('Nueva plantilla', 'New template')}
-            variant="secondary"
-            disabled={g.categories.length === 0}
-            onPress={() =>
-              setEdit({ id: Crypto.randomUUID(), title: '', category: g.categories[0], points: 15 })
-            }
-          />
-        {edit && (
-          <View style={{ gap: 12 }}>
-            <Field
-              label={t('Nombre de plantilla', 'Template name')}
-              value={edit.title}
-              onChangeText={(title) => setEdit({ ...edit, title })}
-              maxLength={100}
-            />
-            <Field
-              label={t('Puntos sugeridos', 'Suggested points')}
-              value={String(edit.points || '')}
-              onChangeText={(v) => setEdit({ ...edit, points: Number(v) })}
-              keyboardType="number-pad"
-            />
-            <View style={s.wrap}>
-              {g.categories.map((c) => (
-                <Chip
-                  key={c}
-                  label={c}
-                  selected={edit.category === c}
-                  onPress={() => setEdit({ ...edit, category: c })}
-                />
-              ))}
-            </View>
-            <Button
-              label={t('Guardar plantilla', 'Save template')}
-              disabled={app.busy}
-              onPress={async () => {
-                if (await app.execute({ type: 'template', ...edit })) setEdit(null);
-              }}
-            />
-            <Button label={t('Cancelar', 'Cancel')} variant="ghost" onPress={() => setEdit(null)} />
-          </View>
-        )}
-        {remove?.startsWith('category:') && <View style={{ gap: 8 }}>
-          <Txt>{t('¿Quitar esta categoría? Primero quita sus sugerencias.', 'Remove this category? Remove its suggestions first.')}</Txt>
-          <Button label={t('Quitar categoría', 'Remove category')} disabled={app.busy || g.templates.some((tp) => tp.category === remove.slice(9))} onPress={async () => {
-            if (await app.execute({ type: 'remove_category', title: remove.slice(9) })) setRemove(null);
-          }} />
-          <Button label={t('Cancelar', 'Cancel')} variant="ghost" onPress={() => setRemove(null)} />
-        </View>}
-        {remove?.startsWith('template:') && <View style={{ gap: 8 }}>
-          <Txt>{t('¿Quitar esta sugerencia? Las aportaciones anteriores seguirán en el historial.', 'Remove this suggestion? Past contributions stay in history.')}</Txt>
-          <Button label={t('Quitar sugerencia', 'Remove suggestion')} disabled={app.busy} onPress={async () => {
-            if (await app.execute({ type: 'remove_template', id: remove.slice(9) })) setRemove(null);
-          }} />
-          <Button label={t('Cancelar', 'Cancel')} variant="ghost" onPress={() => setRemove(null)} />
-        </View>}
       </Card>
       {!app.demo && (
         <Button
@@ -297,7 +240,7 @@ export default function Settings() {
         onPress={() => run(app.exit)}
       />
       <Txt style={{ textAlign: 'center', fontSize: 12, color: colors.muted }}>
-        Family Points · 0.1.8
+        Family Points · 0.1.10
       </Txt>
     </Page>
   );

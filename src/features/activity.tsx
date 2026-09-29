@@ -15,7 +15,7 @@ const labels: Record<string, [string, string]> = {
   adjustment_declined: ['ha descartado el ajuste', 'declined the adjustment'],
   withdrawn: ['ha retirado', 'withdrew'],
   resubmitted: ['ha reenviado', 'resubmitted'],
-  template: ['ha actualizado la plantilla', 'updated the template'],
+  template: ['ha guardado una sugerencia', 'saved a suggestion'],
   category: ['ha añadido una categoría', 'added a category'],
   category_removed: ['ha quitado una categoría', 'removed a category'],
   category_renamed: ['ha cambiado una categoría', 'renamed a category'],

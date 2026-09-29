@@ -110,10 +110,12 @@ describe('group agreements', () => {
   it('lets any member edit suggestions and categories, but protects member removal', () => {
     let g = createDemo('es');
     expect(() => applyCommand(g, 'sam', { type: 'remove_member', id: 'alex' })).toThrow('owner_only');
-    expect(() => applyCommand(g, 'sam', { type: 'remove_category', title: g.categories[0] })).toThrow('category_in_use');
-    g = applyCommand(g, 'sam', { type: 'remove_template', id: 'template-0' });
     g = applyCommand(g, 'sam', { type: 'remove_category', title: g.categories[0] });
+    expect(g.templates.some((tp) => tp.id === 'template-0')).toBe(false);
     g = applyCommand(g, 'sam', { type: 'category', title: 'Planes' });
+    g = applyCommand(g, 'sam', { type: 'template', id: 'plans', title: 'Organizar salida', category: 'Planes', points: 12 });
+    g = applyCommand(g, 'sam', { type: 'remove_template', id: 'plans' });
+    expect(g.templates.some((tp) => tp.id === 'plans')).toBe(false);
     g = applyCommand(g, 'sam', { type: 'template', id: 'plans', title: 'Organizar salida', category: 'Planes', points: 12 });
     g = applyCommand(g, 'sam', { type: 'rename_category', title: 'Planes', newTitle: 'Salidas' });
     expect(g.categories).toContain('Salidas');

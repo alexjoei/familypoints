@@ -85,3 +85,7 @@ La pestaña pasa a llamarse «Configuración». Se retira Cool: quedan Pop, Calm
 ## Cambios del 29 de septiembre — 0.1.9
 
 Las migraciones 008 y 009 se aplicaron en el proyecto Supabase real. Se comprobó añadir, quitar y renombrar una categoría, así como añadir y quitar una sugerencia, con la identidad de un miembro no creador dentro de transacciones revertidas; consultas posteriores confirmaron que no quedaron datos de prueba. Al renombrar una categoría se actualizan sus sugerencias. La pestaña «Configuración» tiene más espacio en móviles estrechos. El canje conserva la aprobación del grupo: reserva puntos al solicitarlo y los descuenta al aprobarse; el texto ahora lo explica.
+
+## Cambios del 29 de septiembre — 0.1.10
+
+Categorías y sugerencias aparecen en bloques separados, cada uno con su botón «Añadir» encima de la lista. Se eliminan los controles de edición de esta pantalla y el término «plantilla». Cada fila tiene una «×» accesible que quita el elemento de inmediato. Quitar una categoría quita también sus sugerencias en la misma operación; las aportaciones antiguas permanecen en el historial. La migración `202609290010_simple_categories.sql` lleva ese comportamiento al grupo conectado. Se añadió un recorrido web que toca las «×» con un miembro no creador y comprueba el resultado.

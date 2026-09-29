@@ -77,7 +77,7 @@ test('pending cards show each voter, distinguish viewing from voting and show bo
   await expect(page.getByText('Alex ha deshecho su rechazo')).toBeVisible();
   await page.screenshot({ path: 'artifacts/voter-states.png', fullPage: true });
 });
-test('a non-owner can manage categories and suggestions from Configuración', async ({ page }) => {
+test('a non-owner can add and remove categories and suggestions with one tap on ×', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
   await page.getByRole('button', { name: 'Sam', exact: true }).click();
@@ -91,16 +91,25 @@ test('a non-owner can manage categories and suggestions from Configuración', as
   expect(settingsLabel!.x).toBeGreaterThanOrEqual(settingsTab!.x - 1);
   expect(settingsLabel!.x + settingsLabel!.width).toBeLessThanOrEqual(settingsTab!.x + settingsTab!.width + 1);
   await expect(page.getByRole('radio', { name: 'Cool' })).toHaveCount(0);
-  await page.getByRole('textbox', { name: 'Nueva categoría' }).fill('Planes');
   await page.getByRole('button', { name: 'Añadir categoría' }).click();
-  await expect(page.getByText('Planes', { exact: true })).toBeVisible();
-  await page.getByText('Planes', { exact: true }).locator('../..').getByRole('button', { name: 'Editar' }).click();
-  await page.getByRole('textbox', { name: 'Nombre de categoría' }).fill('Salidas');
+  await page.getByRole('textbox', { name: 'Nombre de la categoría' }).fill('Planes');
   await page.getByRole('button', { name: 'Guardar categoría' }).click();
-  await expect(page.getByText('Salidas', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Nueva plantilla' }).click();
-  await page.getByRole('textbox', { name: 'Nombre de plantilla' }).fill('Organizar salida');
-  await page.getByRole('button', { name: 'Salidas' }).click();
-  await page.getByRole('button', { name: 'Guardar plantilla' }).click();
+  await expect(page.getByText('Planes', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Añadir sugerencia' }).click();
+  await page.getByRole('textbox', { name: '¿Qué se puede hacer?' }).fill('Organizar salida');
+  await page.getByRole('button', { name: 'Planes', exact: true }).click();
+  await page.getByRole('button', { name: 'Guardar sugerencia' }).click();
   await expect(page.getByText('Organizar salida')).toBeVisible();
+  await page.getByRole('button', { name: 'Quitar sugerencia Organizar salida' }).click();
+  await expect(page.getByText('Organizar salida')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Añadir sugerencia' }).click();
+  await page.getByRole('textbox', { name: '¿Qué se puede hacer?' }).fill('Otra salida');
+  await page.getByRole('button', { name: 'Planes', exact: true }).click();
+  await page.getByRole('button', { name: 'Guardar sugerencia' }).click();
+  await expect(page.getByText('Otra salida')).toBeVisible();
+  await page.getByRole('button', { name: 'Quitar categoría Planes' }).click();
+  await expect(page.getByText('Planes', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('Otra salida')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Quitar categoría Cocina' }).click();
+  await expect(page.getByText('Preparar una cena')).toHaveCount(0);
 });

@@ -201,10 +201,12 @@ describe('PostgreSQL RPC and permission integration', () => {
   it('lets members edit categories and suggestions while only the owner removes people', async () => {
     const id = await makeGroup(2);
     await expect(act(id, 1, { type: 'remove_member', id: people[0] })).rejects.toThrow('owner_only');
-    await expect(act(id, 1, { type: 'remove_category', title: 'Cocina' })).rejects.toThrow('category_in_use');
-    let g = await act(id, 1, { type: 'remove_template', id: 'template-0' });
-    g = await act(id, 1, { type: 'remove_category', title: 'Cocina' });
+    let g = await act(id, 1, { type: 'remove_category', title: 'Cocina' });
+    expect(g.templates.some((tp) => tp.id === 'template-0')).toBe(false);
     g = await act(id, 1, { type: 'category', title: 'Planes' });
+    g = await act(id, 1, { type: 'template', id: 'plans', title: 'Organizar salida', category: 'Planes', points: 12 });
+    g = await act(id, 1, { type: 'remove_template', id: 'plans' });
+    expect(g.templates.some((tp) => tp.id === 'plans')).toBe(false);
     g = await act(id, 1, { type: 'template', id: 'plans', title: 'Organizar salida', category: 'Planes', points: 12 });
     g = await act(id, 1, { type: 'rename_category', title: 'Planes', newTitle: 'Salidas' });
     expect(g.categories).toContain('Salidas');

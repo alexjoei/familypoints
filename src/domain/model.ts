@@ -200,8 +200,8 @@ export function applyCommand(
   }
   if (cmd.type === 'remove_category') {
     requireThat(g.categories.includes(cmd.title), 'not_found');
-    requireThat(!g.templates.some((t) => t.category === cmd.title), 'category_in_use');
     g.categories = g.categories.filter((c) => c !== cmd.title);
+    g.templates = g.templates.filter((t) => t.category !== cmd.title);
     event('category_removed', cmd.title);
     return g;
   }
