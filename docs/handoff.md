@@ -8,6 +8,8 @@ Se activó `EXPO_PUBLIC_NATIVE_GOOGLE_ENABLED=true` solo en el perfil `preview` 
 
 Se intentó `eas build --platform android --profile preview --non-interactive --no-wait` el 30/09/2026: EAS cargó las dos variables públicas de Supabase y la nueva flag, eligió la firma remota existente, incrementó versionCode de 18 a 19 y subió el proyecto; **no creó build ni APK** porque la cuenta gratuita agotó su cupo mensual. El mensaje indica renovación en unas 16 horas, el 01/10/2026. No contratar un plan. Repetir el comando tras la renovación, comprobar enlace/estado del APK y probar Google nativo en el Redmi antes de afirmar que desaparece la pantalla de Supabase. El APK 0.1.15 sigue usando OAuth web.
 
+**Reintento posterior (misma tarde):** se volvió a intentar el mismo comando para confirmar el cupo. EAS incrementó versionCode de 19 a 20 y subió el proyecto, pero volvió a fallar con el mismo aviso, ahora precisando **renovación en 7 horas** (jueves 01/10/2026). No repetir el intento antes de esa ventana; no contratar el plan Starter sin que el usuario lo pida.
+
 ## Estado más reciente (29 septiembre 2026, prueba física Redmi 9 en curso)
 
 El usuario conectó un Redmi 9 (`M2004J19C`, ADB serial `b66cca760407`, 1080×2340) y activó Depuración USB. ADB disponible en `C:\Users\alexj\source\repos\skipadstube\skipadstube\.tools\android-sdk\platform-tools\adb.exe` (no está en PATH). La captura ADB funciona, pero `adb shell input tap` devuelve `SecurityException: Injecting to another application requires INJECT_EVENTS permission`: MIUI no permite control táctil ADB sin otro ajuste. No intentar rodear el bloqueo; el usuario navega manualmente.
