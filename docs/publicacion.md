@@ -54,7 +54,7 @@ La clave pública se entrega a los clientes por diseño; la protección reside e
 2. Crear un cliente OAuth **Web** para el flujo navegador -> Supabase -> app.
 3. Copiar a las URI de redirección autorizadas de Google el callback exacto mostrado por Supabase, normalmente `https://TU-PROYECTO.supabase.co/auth/v1/callback`. No confundirlo con el retorno propio de la app.
 4. Guardar ID y secreto de Google en el proveedor Google de Supabase.
-5. Configurar usuarios de prueba mientras la pantalla de consentimiento esté en modo prueba.
+5. Para los permisos actuales (`openid`, `email`, `profile`), Google permite entrar a usuarios no incluidos en la lista de prueba incluso si la app está en modo Testing. Si se añaden otros permisos, revisar la audiencia y los requisitos de verificación antes de invitar a más personas.
 6. La app pide solo `openid email profile`, sin permisos de Drive, contactos ni otros servicios.
 7. Probar acceso, cancelación, errores, sesión persistente y cierre en cada plataforma.
 
