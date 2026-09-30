@@ -1,4 +1,20 @@
-# Family Points — relevo de trabajo (29 septiembre 2026)
+# Family Points — relevo de trabajo (30 septiembre 2026)
+
+## Estado más reciente (30 septiembre 2026, Google nativo Android)
+
+El usuario confirmó en Google Cloud el cliente OAuth Android `Family Points Android (EAS preview)`, ID público `31631729751-hja3lpnbem19vpsjf54ubl6ap34qsquk.apps.googleusercontent.com`. Se verificó en la consola que pertenece al proyecto `familypoints-510007`, paquete `app.familypoints.mobile`, SHA-1 `A5:6A:C3:90:BE:1D:D7:64:2A:B2:6A:5F:27:9D:85:A0:2B:0C:12:CB`, coincidente con el APK 0.1.15 firmado por EAS. El cliente Web Supabase anterior sigue intacto; el cliente Android no tiene secreto. La cuenta Google está en modo de prueba con usuarios de prueba: cuentas nuevas quizá deban añadirse a la audiencia antes de iniciar sesión.
+
+Se activó `EXPO_PUBLIC_NATIVE_GOOGLE_ENABLED=true` solo en el perfil `preview` de `eas.json` y se subió `app.json` a 0.1.16. Android usará `react-native-nitro-google-signin` y enviará el ID token a Supabase; web e iOS conservan OAuth web. Ver [google-native-android.md](google-native-android.md). TypeScript, lint y las 60 pruebas pasan; `EXPO_PUBLIC_NATIVE_GOOGLE_ENABLED=true npx expo export --platform android` generó el bundle Hermes. En este Windows Vitest y Hermes necesitaron permisos ampliados para crear procesos hijos; sin ellos devuelven `spawn EPERM`.
+
+Se intentó `eas build --platform android --profile preview --non-interactive --no-wait` el 30/09/2026: EAS cargó las dos variables públicas de Supabase y la nueva flag, eligió la firma remota existente, incrementó versionCode de 18 a 19 y subió el proyecto; **no creó build ni APK** porque la cuenta gratuita agotó su cupo mensual. El mensaje indica renovación en unas 16 horas, el 01/10/2026. No contratar un plan. Repetir el comando tras la renovación, comprobar enlace/estado del APK y probar Google nativo en el Redmi antes de afirmar que desaparece la pantalla de Supabase. El APK 0.1.15 sigue usando OAuth web.
+
+## Estado más reciente (29 septiembre 2026, prueba física Redmi 9 en curso)
+
+El usuario conectó un Redmi 9 (`M2004J19C`, ADB serial `b66cca760407`, 1080×2340) y activó Depuración USB. ADB disponible en `C:\Users\alexj\source\repos\skipadstube\skipadstube\.tools\android-sdk\platform-tools\adb.exe` (no está en PATH). La captura ADB funciona, pero `adb shell input tap` devuelve `SecurityException: Injecting to another application requires INJECT_EVENTS permission`: MIUI no permite control táctil ADB sin otro ajuste. No intentar rodear el bloqueo; el usuario navega manualmente.
+
+EAS build `48711c5c-c28f-412f-bf0f-bc10572abb82` terminó (`0.1.15`, versionCode 18, código `aa4346f`). APK directo: https://expo.dev/artifacts/eas/2Agv-vHBW9r7L6I0xUHOSWW0pTwW8C4dqXh9IdT7HX4.apk . Descargado en `artifacts/family-points-0.1.15.apk` (ignorado por Git), `python -m zipfile -t` pasó. `adb install -r` falló con `INSTALL_FAILED_USER_RESTRICTED`, así que el usuario lo instaló desde el enlace. `dumpsys package` verificó versión 0.1.15/versionCode 18 conservando los datos previos.
+
+Prueba física **incompleta**: se capturó el fallo en la 0.1.12 con teclado abierto: «Solicitar puntos» queda cortado por el teclado (`artifacts/redmi-before-install.png`). En 0.1.15 se capturó el formulario sin teclado (`artifacts/redmi-test-new.png`): el botón aparece dentro del card debajo de puntos, pero falta la captura **con teclado abierto**. Se pidió al usuario abrir `+` → «¿Cuántos puntos?» y dejar la pantalla activa. Una solicitud real `F` de 15 puntos apareció en Pendientes durante su interacción; no crear más datos de prueba desde el agente. La pantalla volvió a apagarse y no se puede despertar/tocar mediante ADB por la restricción MIUI. Cuando el usuario deje el teclado abierto, ejecutar `adb exec-out screencap -p > artifacts/redmi-keyboard-native-0.1.15.png`, inspeccionar visualmente el CTA y decidir si hace falta otro arreglo. **No declarar la corrección física verificada ni subir nuevo código antes de esa prueba.** Esta actualización de handoff aún está local y no se ha publicado por la petición de probar antes de subir.
 
 ## Estado más reciente (29 septiembre 2026, corrección del botón antes de publicar)
 
