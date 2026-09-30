@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Switch, View } from 'react-native';
+import { Platform, Switch, View } from 'react-native';
 import * as Crypto from 'expo-crypto';
 import { router } from 'expo-router';
 import { Button, Card, Chip, Field, Page, Txt, useUi } from '../../components/ui';
@@ -83,6 +83,17 @@ export default function Settings() {
         </Card>
       )}
       <ThemePicker />
+      {Platform.OS === 'web' ? (
+        <Card>
+          <Txt style={s.subtitle}>{t('Avisos a tu gusto', 'Notifications your way')}</Txt>
+          <Txt style={s.muted}>
+            {t(
+              'Los avisos push todavía no están disponibles en la versión web. Puedes entrar cuando quieras para ver tus solicitudes pendientes.',
+              'Push alerts are not available in the web version yet. Open the app any time to check pending requests.',
+            )}
+          </Txt>
+        </Card>
+      ) : (
       <Card>
         <Txt style={s.subtitle}>{t('Avisos a tu gusto', 'Notifications your way')}</Txt>
         <Txt style={s.muted}>{t('Elige qué novedades te interesan. Cada persona decide las suyas.', 'Choose which updates matter to you. Everyone sets their own.')}</Txt>
@@ -101,6 +112,7 @@ export default function Settings() {
         ))}
         <Txt style={s.muted}>{t('Con los avisos activados también llegan con la app cerrada o en segundo plano.', 'With alerts enabled, they also arrive when the app is closed or in the background.')}</Txt>
       </Card>
+      )}
       <Card>
         <Txt style={s.subtitle}>{t('Nuestros acuerdos', 'Our agreements')}</Txt>
         <Txt>

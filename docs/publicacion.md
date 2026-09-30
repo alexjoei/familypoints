@@ -2,7 +2,28 @@
 
 ## Lo que está y lo que falta
 
-La app y las migraciones están implementadas. El proyecto EAS está vinculado a `@alexjoei/family-points`, con credenciales Android gestionadas por Expo para generar APK de prueba. No se ha desplegado el backend ni probado OAuth real. La demo funciona sin configuración externa.
+La app, las migraciones y el backend Supabase están desplegados. El proyecto EAS está vinculado a `@alexjoei/family-points`, con credenciales Android gestionadas por Expo para generar APK de prueba. Google OAuth se ha probado en web local y Android usa Google nativo a partir del siguiente APK 0.1.16. La demo funciona sin configuración externa.
+
+La versión web para compartir con amigos que usan iPhone está en **https://family-points.expo.app**. Es gratuita, requiere conexión y se puede añadir a la pantalla de inicio. La prueba de Google y de los flujos completos en Safari/iPhone físico sigue pendiente; ver el estado actual en `docs/handoff.md`.
+
+## Pruebas gratuitas en iPhone: web instalable
+
+1. Abrir `https://family-points.expo.app` en Safari.
+2. Pulsar **Compartir → Añadir a pantalla de inicio** y abrir Family Points desde el icono nuevo.
+3. Iniciar sesión dentro de esa app de inicio. iOS aísla el almacenamiento local de Safari y de la web instalada; iniciar sesión en Safari antes de instalarla no garantiza que la sesión pase al icono.
+4. Crear o unirse a un grupo mediante el código, sumar puntos, aprobarlos desde otra cuenta y probar un canje. Comprobar también fotos, teclado y retorno de Google en un iPhone real.
+
+La web instalada usa el mismo código de producto y el mismo Supabase que Android. No hay modo sin conexión ni push web en esta versión; las novedades se ven al abrir la app. El menú de Configuración explica esta limitación sin mostrar controles de notificaciones que no funcionen. Esta vía evita TestFlight y el coste del programa de Apple durante las pruebas; la publicación nativa iOS queda para otra fase.
+
+Para reconstruir y publicar la web (después de actualizar código o variables públicas):
+
+```powershell
+npm run brand
+npm run export:web -- --clear
+npx eas-cli@latest deploy --prod --non-interactive --dev-domain family-points
+```
+
+El dominio de producción debe estar permitido en Supabase Auth → URL Configuration como `https://family-points.expo.app/auth/callback`. El callback del proveedor Google en Google Cloud sigue apuntando a Supabase; **no** hay que cambiarlo al dominio de Expo. No ampliar la lista con comodines. El proyecto usa `web.output: static`, `public/manifest.json` y `src/app/+html.tsx`; no registra un service worker, por lo que tampoco promete uso offline.
 
 ## 1. Supabase
 

@@ -9,7 +9,10 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.familypoints.mobile"
+      "bundleIdentifier": "app.familypoints.mobile",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "app.familypoints.mobile",
@@ -21,7 +24,7 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "output": "single",
+      "output": "static",
       "favicon": "./assets/favicon.png"
     },
     "plugins": [

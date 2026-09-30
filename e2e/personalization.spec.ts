@@ -128,17 +128,10 @@ test('giving points credits the other person immediately without a vote', async 
   await page.getByRole('tab', { name: 'Configuración' }).click();
   await expect(page.getByText('43 pt')).toBeVisible();
 });
-test('notification choices are personal and survive a reload', async ({ page }) => {
+test('web explains that push alerts are unavailable instead of offering a dead button', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
   await page.getByRole('tab', { name: 'Configuración' }).click();
-  await expect(page.getByRole('switch', { name: 'Solicitudes para revisar' })).toBeChecked();
-  await expect(page.getByRole('switch', { name: 'Cambios en el grupo' })).not.toBeChecked();
-  await page.getByRole('switch', { name: 'Solicitudes para revisar' }).uncheck();
-  await page.reload();
-  await page.getByRole('button', { name: 'Probar con una pareja de ejemplo' }).click();
-  await page.getByRole('tab', { name: 'Configuración' }).click();
-  await expect(page.getByRole('switch', { name: 'Solicitudes para revisar' })).not.toBeChecked();
-  await page.getByRole('button', { name: 'Sam', exact: true }).click();
-  await expect(page.getByRole('switch', { name: 'Solicitudes para revisar' })).toBeChecked();
+  await expect(page.getByText('Los avisos push todavía no están disponibles en la versión web. Puedes entrar cuando quieras para ver tus solicitudes pendientes.')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Activar avisos en este móvil' })).toHaveCount(0);
 });

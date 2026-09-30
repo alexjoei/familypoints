@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useSyncExternalStore } from 'react';
 import { router, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { Pressable, View } from 'react-native';
+import { Platform, Pressable, View } from 'react-native';
 import { AppProvider, useApp } from '../state/AppProvider';
 import { Txt, useUi } from '../components/ui';
 import { AddPointsButton } from '../components/AddPointsButton';
@@ -59,6 +59,8 @@ function Layout() {
   );
 }
 export default function Root() {
+  const hydrated = useSyncExternalStore(subscribe, clientSnapshot, serverSnapshot);
+  if (Platform.OS === 'web' && !hydrated) return null;
   return (
     <SafeAreaProvider>
       <AppProvider>
@@ -67,3 +69,7 @@ export default function Root() {
     </SafeAreaProvider>
   );
 }
+
+const subscribe = () => () => {};
+const clientSnapshot = () => true;
+const serverSnapshot = () => false;
